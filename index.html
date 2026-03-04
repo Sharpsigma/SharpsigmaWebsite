@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SharpSigma — Sharp by Design. Sigma by Standard.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════ */
+:root {
+  --navy:   #0A1628;
+  --navy2:  #0F1F3A;
+  --navy3:  #162E52;
+  --mid:    #1E4080;
+  --orange: #E8710A;
+  --orange2:#FF8C28;
+  --orange3:#B85500;
+  --silver: #8BA3C0;
+  --light:  #C8D8EA;
+  --white:  #F0F4F8;
+  --off:    #E2EAF2;
+  --cream:  #FAFAF8;
+  --H:'Barlow Condensed',sans-serif;
+  --B:'DM Sans',sans-serif;
+  --M:'DM Mono',monospace;
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  background:var(--navy);
+  color:var(--off);
+  font-family:var(--B);
+  line-height:1.65;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--orange);color:var(--navy)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--navy2)}
+::-webkit-scrollbar-thumb{background:var(--orange);border-radius:2px}
+
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+button{font-family:var(--B);cursor:pointer}
+
+/* ═══════════════════════════════════════
+   CURSOR CUSTOM
+═══════════════════════════════════════ */
+.cursor{
+  position:fixed;width:12px;height:12px;
+  background:var(--orange);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .1s,opacity .3s;
+  mix-blend-mode:difference;
+}
+.cursor-ring{
+  position:fixed;width:36px;height:36px;
+  border:1px solid rgba(232,113,10,.4);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform .15s ease-out,width .3s,height .3s,opacity .3s;
+}
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 56px;height:76px;
+  background:rgba(10,22,40,.9);
+  backdrop-filter:blur(20px) saturate(1.2);
+  border-bottom:1px solid rgba(255,255,255,.04);
+  transition:border-color .4s;
+}
+nav.scrolled{border-bottom-color:rgba(232,113,10,.2)}
+
+.nav-logo{
+  display:flex;align-items:center;gap:3px;
+  font-family:var(--H);font-size:22px;font-weight:800;
+  letter-spacing:.04em;cursor:pointer;
+  color:var(--white);
+}
+.nav-logo .s1{color:var(--white)}
+.nav-logo .sig{color:var(--orange);font-size:26px;line-height:1;display:inline-block;transform:translateY(1px)}
+.nav-logo .s2{color:var(--white)}
+
+.nav-center{display:flex;align-items:center;gap:2px;list-style:none}
+.nav-center a{
+  font-family:var(--M);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--silver);
+  padding:8px 16px;transition:color .25s;cursor:pointer;
+  position:relative;
+}
+.nav-center a::after{
+  content:'';position:absolute;bottom:4px;left:16px;right:16px;
+  height:1px;background:var(--orange);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .25s;
+}
+.nav-center a:hover,.nav-center a.active{color:var(--off)}
+.nav-center a:hover::after,.nav-center a.active::after{transform:scaleX(1)}
+
+.nav-right{display:flex;align-items:center;gap:16px}
+.btn-nav{
+  font-family:var(--M);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;
+  padding:10px 24px;
+  background:var(--orange);color:var(--navy);
+  border:none;font-weight:500;
+  transition:background .2s,transform .2s;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
+}
+.btn-nav:hover{background:var(--orange2);transform:translateY(-1px)}
+
+/* ═══════════════════════════════════════
+   PAGES
+═══════════════════════════════════════ */
+.page{display:none;padding-top:76px;min-height:100vh}
+.page.active{display:block}
+
+/* ═══════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════ */
+.eyebrow{
+  font-family:var(--M);font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--orange);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:20px;
+}
+.eyebrow::before{content:'';width:36px;height:1px;background:var(--orange)}
+
+.display-xl{
+  font-family:var(--H);font-size:clamp(56px,8vw,110px);
+  font-weight:800;line-height:.92;letter-spacing:-.02em;
+  text-transform:uppercase;
+}
+.display-lg{
+  font-family:var(--H);font-size:clamp(40px,5vw,72px);
+  font-weight:800;line-height:.95;letter-spacing:-.01em;
+  text-transform:uppercase;
+}
+.display-md{
+  font-family:var(--H);font-size:clamp(28px,3vw,44px);
+  font-weight:700;line-height:1.05;text-transform:uppercase;
+  letter-spacing:.01em;
+}
+.amber{color:var(--orange)}
+.dim{color:var(--silver);font-weight:400}
+
+.body-lg{font-size:18px;line-height:1.8;color:var(--white);font-weight:300}
+.body-md{font-size:16px;line-height:1.75;color:var(--light)}
+.body-sm{font-size:14px;line-height:1.7;color:var(--silver)}
+
+.btn-primary{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--M);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:500;
+  padding:16px 36px;
+  background:var(--orange);color:var(--navy);
+  border:none;transition:all .25s;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+}
+.btn-primary:hover{background:var(--orange2);transform:translateY(-3px);box-shadow:0 16px 48px rgba(232,113,10,.3)}
+
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--M);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:400;
+  padding:15px 36px;
+  background:transparent;color:var(--white);
+  border:1px solid rgba(255,255,255,.15);transition:all .25s;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange);transform:translateY(-3px)}
+
+.btn-white{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--M);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:500;
+  padding:18px 40px;
+  background:var(--white);color:var(--navy);
+  border:none;transition:all .25s;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+  flex-shrink:0;
+}
+.btn-white:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.3)}
+
+.section-wrap{padding:120px 56px}
+.section-wrap-sm{padding:80px 56px}
+
+.divider{
+  height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  margin:0 56px;
+}
+
+/* ═══════════════════════════════════════
+   TICKER
+═══════════════════════════════════════ */
+.ticker{
+  background:var(--navy2);
+  border-top:1px solid rgba(232,113,10,.25);
+  border-bottom:1px solid rgba(255,255,255,.04);
+  padding:18px 0;overflow:hidden;
+}
+.ticker-track{
+  display:flex;gap:64px;white-space:nowrap;
+  animation:ticker 40s linear infinite;
+}
+.ticker-item{
+  display:flex;align-items:center;gap:14px;flex-shrink:0;
+  font-family:var(--M);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--silver);
+}
+.ticker-dot{width:5px;height:5px;background:var(--orange);border-radius:50%}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ═══════════════════════════════════════
+   CTA BAND
+═══════════════════════════════════════ */
+.cta-band{
+  background:var(--orange);
+  padding:80px 56px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:48px;flex-wrap:wrap;position:relative;overflow:hidden;
+}
+.cta-band::before{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:50%;
+  background:repeating-linear-gradient(
+    -45deg,transparent,transparent 20px,
+    rgba(0,0,0,.04) 20px,rgba(0,0,0,.04) 21px
+  );
+}
+.cta-band .display-md{color:var(--navy);position:relative}
+.cta-band p{font-size:16px;color:rgba(10,22,40,.7);max-width:480px;position:relative}
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer{
+  background:var(--navy2);
+  border-top:1px solid rgba(255,255,255,.04);
+  padding:72px 56px 36px;
+}
+.footer-top{
+  display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr;
+  gap:56px;margin-bottom:56px;
+}
+.footer-brand .nav-logo{font-size:20px;margin-bottom:20px}
+.footer-tagline{
+  font-family:var(--M);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--orange);
+  margin-bottom:16px;
+}
+.footer-desc{font-size:14px;color:var(--silver);line-height:1.8;max-width:260px;margin-bottom:24px}
+.footer-email{
+  font-family:var(--M);font-size:12px;color:var(--light);
+  letter-spacing:.06em;
+}
+.footer-col h4{
+  font-family:var(--M);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--orange);
+  margin-bottom:20px;
+}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-col ul a{
+  font-size:14px;color:var(--silver);cursor:pointer;
+  transition:color .2s;display:flex;align-items:center;gap:8px;
+}
+.footer-col ul a:hover{color:var(--orange)}
+.footer-col ul a::before{
+  content:'';width:16px;height:1px;background:var(--orange);
+  opacity:0;transition:opacity .2s;flex-shrink:0;
+}
+.footer-col ul a:hover::before{opacity:1}
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.04);
+  padding-top:28px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-copy{font-family:var(--M);font-size:11px;color:var(--silver);letter-spacing:.1em}
+.footer-mark{font-family:var(--M);font-size:11px;color:rgba(232,113,10,.5);letter-spacing:.08em}
+
+/* ═══════════════════════════════════════
+   PAGE HERO (inner pages)
+═══════════════════════════════════════ */
+.page-hero{
+  background:var(--navy2);
+  padding:80px 56px 72px;
+  position:relative;overflow:hidden;
+}
+.page-hero-line{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--orange),rgba(232,113,10,.0));
+}
+.page-hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.page-hero-content{position:relative;z-index:2}
+.breadcrumb{
+  font-family:var(--M);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--silver);
+  margin-bottom:24px;display:flex;align-items:center;gap:10px;
+}
+.breadcrumb .sep{color:var(--orange)}
+.page-hero-subtitle{
+  font-size:17px;color:var(--light);
+  max-width:580px;line-height:1.8;margin-top:24px;font-weight:300;
+}
+
+/* ═══════════════════════════════════════
+   HOME — HERO
+═══════════════════════════════════════ */
+.home-hero{
+  position:relative;min-height:calc(100vh - 76px);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:80px 56px;overflow:hidden;
+}
+
+/* Blueprint grid */
+.hero-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(232,113,10,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(232,113,10,.04) 1px,transparent 1px);
+  background-size:72px 72px;
+}
+.hero-bg::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 70% at 60% 50%,rgba(10,22,40,0) 0%,var(--navy) 100%);
+}
+
+/* Diagonal accent line */
+.hero-diag{
+  position:absolute;
+  width:3px;height:200px;
+  background:linear-gradient(180deg,transparent,var(--orange),transparent);
+  right:180px;top:50%;transform:translateY(-50%) rotate(25deg);
+  opacity:.4;
+}
+.hero-diag2{
+  position:absolute;
+  width:1px;height:300px;
+  background:linear-gradient(180deg,transparent,rgba(232,113,10,.3),transparent);
+  right:220px;top:40%;transform:rotate(25deg);
+}
+
+.hero-tag-line{
+  position:absolute;top:48px;right:56px;
+  font-family:var(--M);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--silver);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  display:flex;align-items:center;gap:12px;
+  opacity:0;animation:fadeUp .6s .8s forwards;
+}
+.hero-tag-line::after{
+  content:'';width:1px;height:60px;background:rgba(255,255,255,.1);
+}
+
+.hero-content{position:relative;z-index:2;max-width:900px}
+
+.hero-eyebrow{
+  font-family:var(--M);font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--orange);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:32px;
+  opacity:0;animation:fadeUp .6s .1s forwards;
+}
+.hero-eyebrow::before{content:'';width:40px;height:1px;background:var(--orange)}
+
+.hero-h1{
+  font-family:var(--H);
+  font-size:clamp(60px,9vw,128px);
+  font-weight:800;
+  line-height:.9;
+  letter-spacing:-.02em;
+  text-transform:uppercase;
+  margin-bottom:40px;
+  opacity:0;animation:fadeUp .8s .25s forwards;
+}
+.hero-h1 .line1{display:block;color:var(--white)}
+.hero-h1 .line2{
+  display:block;
+  -webkit-text-stroke:2px var(--orange);
+  color:transparent;
+}
+.hero-h1 .line3{display:block;color:var(--silver);font-weight:400}
+
+.hero-tagline{
+  font-family:var(--M);font-size:13px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--orange);
+  margin-bottom:28px;
+  opacity:0;animation:fadeUp .6s .4s forwards;
+}
+
+.hero-body{
+  font-size:18px;color:var(--white);line-height:1.8;
+  max-width:560px;font-weight:300;margin-bottom:52px;
+  opacity:0;animation:fadeUp .7s .5s forwards;
+}
+
+.hero-actions{
+  display:flex;gap:16px;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .6s .65s forwards;
+}
+
+/* Hero stats row */
+.hero-stats{
+  position:absolute;bottom:56px;right:56px;
+  display:flex;gap:0;
+  opacity:0;animation:fadeUp .6s .9s forwards;
+  border:1px solid rgba(255,255,255,.06);
+}
+.hstat{
+  padding:24px 36px;text-align:center;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+.hstat:last-child{border-right:none}
+.hstat-num{
+  font-family:var(--H);font-size:40px;font-weight:800;
+  color:var(--orange);line-height:1;display:block;
+}
+.hstat-lbl{
+  font-family:var(--M);font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--silver);
+  display:block;margin-top:6px;
+}
+
+/* ═══════════════════════════════════════
+   HOME — THREE PILLARS
+═══════════════════════════════════════ */
+.pillars{background:var(--navy2);padding:120px 56px}
+.pillars-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;margin-top:64px;
+}
+.pillar{
+  background:var(--navy3);padding:52px 44px;
+  position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,.04);
+  transition:all .4s cubic-bezier(.25,.46,.45,.94);
+  cursor:pointer;
+}
+.pillar::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--orange);
+  transform:scaleY(0);transform-origin:bottom;
+  transition:transform .4s cubic-bezier(.25,.46,.45,.94);
+}
+.pillar:hover{background:var(--mid);transform:translateY(-8px);box-shadow:0 32px 80px rgba(0,0,0,.5)}
+.pillar:hover::before{transform:scaleY(1)}
+
+.pillar-num{
+  font-family:var(--H);font-size:88px;font-weight:800;
+  color:rgba(232,113,10,.06);position:absolute;
+  top:16px;right:24px;line-height:1;pointer-events:none;
+}
+.pillar-icon{font-size:36px;margin-bottom:24px;display:block}
+.pillar-label{
+  font-family:var(--M);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:12px;
+}
+.pillar-title{
+  font-family:var(--H);font-size:28px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.02em;
+  color:var(--white);margin-bottom:16px;line-height:1.1;
+}
+.pillar-body{font-size:14px;color:var(--silver);line-height:1.75;margin-bottom:28px}
+.pillar-items{list-style:none;display:flex;flex-direction:column;gap:8px}
+.pillar-items li{
+  font-size:13px;color:var(--light);
+  padding-left:18px;position:relative;line-height:1.4;
+}
+.pillar-items li::before{
+  content:'';position:absolute;left:0;top:8px;
+  width:8px;height:1px;background:var(--orange);
+}
+
+/* ═══════════════════════════════════════
+   HOME — SERVICES OVERVIEW
+═══════════════════════════════════════ */
+.services-overview{background:var(--navy);padding:120px 56px}
+.svc-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;margin-top:64px;
+}
+.svc-card{
+  background:var(--navy2);padding:44px 36px;
+  border:1px solid rgba(255,255,255,.04);
+  position:relative;overflow:hidden;
+  transition:all .35s;
+}
+.svc-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:2px;background:var(--orange);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .35s;
+}
+.svc-card:hover{background:var(--navy3);transform:translateY(-4px)}
+.svc-card:hover::after{transform:scaleX(1)}
+.svc-card.featured{
+  border-color:rgba(232,113,10,.2);
+  background:linear-gradient(135deg,rgba(232,113,10,.06) 0%,var(--navy2) 100%);
+}
+.svc-n{
+  font-family:var(--H);font-size:72px;font-weight:800;
+  color:rgba(232,113,10,.07);position:absolute;
+  top:12px;right:20px;line-height:1;pointer-events:none;
+}
+.svc-icon{font-size:32px;margin-bottom:18px;display:block}
+.svc-title{
+  font-family:var(--H);font-size:20px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:12px;
+}
+.svc-body{font-size:13px;color:var(--silver);line-height:1.7;margin-bottom:18px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font-family:var(--M);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;padding:4px 10px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  color:var(--light);
+}
+.chip-hot{
+  background:rgba(232,113,10,.12);
+  border-color:rgba(232,113,10,.3);
+  color:var(--orange);
+}
+
+/* ═══════════════════════════════════════
+   HOME — PROCESS PREVIEW
+═══════════════════════════════════════ */
+.process-preview{
+  background:var(--navy2);padding:120px 56px;
+  position:relative;overflow:hidden;
+}
+.process-preview::before{
+  content:'';position:absolute;
+  top:0;right:0;bottom:0;width:400px;
+  background:linear-gradient(270deg,rgba(232,113,10,.04),transparent);
+  pointer-events:none;
+}
+
+.process-cols{
+  display:grid;grid-template-columns:1fr 1.5fr;
+  gap:80px;margin-top:64px;align-items:start;
+}
+.process-steps{display:flex;flex-direction:column;gap:0}
+.pstep{
+  display:flex;gap:24px;padding:28px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  transition:all .3s;cursor:default;
+}
+.pstep:last-child{border-bottom:none}
+.pstep:hover .pstep-num{background:var(--orange);color:var(--navy)}
+.pstep-num{
+  font-family:var(--H);font-size:18px;font-weight:800;
+  color:var(--orange);width:48px;height:48px;
+  border:1px solid rgba(232,113,10,.3);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .3s;
+}
+.pstep-content{}
+.pstep-title{
+  font-family:var(--H);font-size:18px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:6px;
+}
+.pstep-body{font-size:13px;color:var(--silver);line-height:1.65}
+
+.process-right{}
+.cm-lifecycle{
+  background:var(--navy3);border:1px solid rgba(255,255,255,.06);
+  padding:40px;
+}
+.cm-lifecycle-title{
+  font-family:var(--M);font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:28px;
+}
+.cm-step{
+  display:flex;align-items:flex-start;gap:16px;
+  padding:16px 0;border-bottom:1px solid rgba(255,255,255,.04);
+}
+.cm-step:last-child{border-bottom:none}
+.cm-step-dot{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(232,113,10,.15);
+  border:1px solid rgba(232,113,10,.3);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  font-family:var(--M);font-size:10px;color:var(--orange);
+}
+.cm-step-info{}
+.cm-step-name{
+  font-family:var(--H);font-size:15px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:2px;
+}
+.cm-step-desc{font-size:12px;color:var(--silver);line-height:1.55}
+
+/* ═══════════════════════════════════════
+   HOME — CREDENTIALS
+═══════════════════════════════════════ */
+.creds{background:var(--navy);padding:120px 56px;position:relative;overflow:hidden}
+.creds::before{
+  content:'Σ';
+  font-family:var(--H);font-size:520px;font-weight:800;
+  color:rgba(232,113,10,.025);
+  position:absolute;right:-60px;bottom:-60px;
+  line-height:1;pointer-events:none;
+}
+.creds-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:2px;margin-top:64px;
+}
+.cred-card{
+  background:var(--navy2);padding:36px 28px;
+  border:1px solid rgba(255,255,255,.04);
+  transition:all .35s;
+}
+.cred-card:hover{
+  background:var(--navy3);
+  border-color:rgba(232,113,10,.2);
+  transform:translateY(-4px);
+}
+.cred-icon{font-size:28px;margin-bottom:18px}
+.cred-title{
+  font-family:var(--H);font-size:17px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--orange);margin-bottom:10px;
+}
+.cred-body{font-size:13px;color:var(--silver);line-height:1.65}
+
+/* ═══════════════════════════════════════
+   SERVICES PAGE
+═══════════════════════════════════════ */
+.svc-page-body{background:var(--navy);padding:80px 56px}
+
+.pillar-section{margin-bottom:96px}
+.pillar-section:last-child{margin-bottom:0}
+
+.pillar-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding-bottom:32px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  margin-bottom:48px;
+  gap:40px;flex-wrap:wrap;
+}
+.pillar-header-left{}
+.pillar-header-tag{
+  font-family:var(--M);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:10px;
+}
+.pillar-header-title{
+  font-family:var(--H);font-size:36px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.02em;color:var(--white);
+}
+.pillar-header-desc{
+  font-size:15px;color:var(--silver);line-height:1.7;
+  max-width:480px;margin-top:8px;
+}
+
+.svc-detail-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:2px;
+}
+.svc-detail-card{
+  background:var(--navy2);padding:44px 40px;
+  border:1px solid rgba(255,255,255,.04);
+  transition:all .35s;position:relative;overflow:hidden;
+}
+.svc-detail-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:2px;background:var(--orange);
+  transform:scaleX(0);transform-origin:left;transition:transform .35s;
+}
+.svc-detail-card:hover{background:var(--navy3);transform:translateY(-4px)}
+.svc-detail-card:hover::before{transform:scaleX(1)}
+.sdc-icon{font-size:32px;margin-bottom:20px;display:block}
+.sdc-title{
+  font-family:var(--H);font-size:22px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:14px;
+}
+.sdc-body{font-size:14px;color:var(--light);line-height:1.75;margin-bottom:24px}
+.sdc-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.sdc-list li{
+  font-size:13px;color:var(--silver);
+  padding-left:20px;position:relative;line-height:1.5;
+}
+.sdc-list li::before{
+  content:'—';position:absolute;left:0;
+  color:var(--orange);font-family:var(--M);font-size:11px;
+}
+
+/* ═══════════════════════════════════════
+   HOW WE WORK PAGE
+═══════════════════════════════════════ */
+.hiw-body{background:var(--navy);padding:80px 56px}
+
+.engagement-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;margin-bottom:96px;
+}
+.eng-card{
+  background:var(--navy2);padding:48px 36px;
+  border:1px solid rgba(255,255,255,.04);
+  cursor:pointer;transition:all .35s;position:relative;overflow:hidden;
+}
+.eng-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:3px;background:var(--orange);
+  transform:scaleX(0);transform-origin:left;transition:transform .4s;
+}
+.eng-card:hover{background:var(--navy3);transform:translateY(-6px)}
+.eng-card:hover::after{transform:scaleX(1)}
+.eng-num{
+  font-family:var(--H);font-size:80px;font-weight:800;
+  color:rgba(232,113,10,.07);position:absolute;top:12px;right:20px;line-height:1;
+}
+.eng-icon{font-size:36px;margin-bottom:20px;display:block}
+.eng-title{
+  font-family:var(--H);font-size:22px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:12px;
+}
+.eng-body{font-size:14px;color:var(--silver);line-height:1.7}
+
+/* Full CM lifecycle */
+.cm-full{
+  background:var(--navy2);padding:80px 56px;
+  border-top:1px solid rgba(255,255,255,.04);
+  border-bottom:1px solid rgba(255,255,255,.04);
+  margin:0 -56px;
+}
+.cm-full-inner{max-width:960px;margin:0 auto}
+.cm-phases{display:flex;flex-direction:column;gap:2px;margin-top:56px}
+.cm-phase{
+  display:grid;grid-template-columns:100px 1fr;
+  gap:32px;padding:32px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  align-items:start;
+  opacity:0;transform:translateX(-20px);
+  transition:all .5s;
+}
+.cm-phase.visible{opacity:1;transform:translateX(0)}
+.cm-phase:last-child{border-bottom:none}
+.cm-phase-num{
+  font-family:var(--H);font-size:56px;font-weight:800;
+  color:rgba(232,113,10,.2);line-height:1;text-align:center;
+}
+.cm-phase-content{}
+.cm-phase-tag{
+  font-family:var(--M);font-size:9px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:8px;
+}
+.cm-phase-title{
+  font-family:var(--H);font-size:24px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:10px;
+}
+.cm-phase-body{font-size:14px;color:var(--silver);line-height:1.7;max-width:600px}
+
+/* ═══════════════════════════════════════
+   INDUSTRIES PAGE
+═══════════════════════════════════════ */
+.ind-body{background:var(--navy);padding:80px 56px}
+
+.capability-intro{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center;margin-bottom:96px;
+}
+.cap-text{}
+.cap-visual{
+  background:var(--navy2);
+  border:1px solid rgba(255,255,255,.06);
+  padding:48px;
+  position:relative;
+}
+.cap-visual::after{
+  content:'';position:absolute;bottom:-12px;right:-12px;
+  width:100%;height:100%;
+  border:1px solid rgba(232,113,10,.2);z-index:-1;
+}
+.cap-list{list-style:none;display:flex;flex-direction:column;gap:14px}
+.cap-list li{
+  display:flex;align-items:center;gap:14px;
+  font-size:15px;color:var(--white);padding-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.cap-list li:last-child{border-bottom:none;padding-bottom:0}
+.cap-list li::before{
+  content:'';width:20px;height:1px;
+  background:var(--orange);flex-shrink:0;
+}
+
+.sectors-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:2px;margin-bottom:80px;
+}
+.sector-card{
+  background:var(--navy2);padding:56px 48px;
+  border:1px solid rgba(255,255,255,.04);
+  position:relative;overflow:hidden;transition:all .4s;
+}
+.sector-card::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;
+  width:4px;background:var(--orange);
+  transform:scaleY(0);transform-origin:top;transition:transform .4s;
+}
+.sector-card:hover{background:var(--navy3)}
+.sector-card:hover::before{transform:scaleY(1)}
+.sector-icon{font-size:48px;display:block;margin-bottom:24px}
+.sector-title{
+  font-family:var(--H);font-size:30px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.02em;
+  color:var(--white);margin-bottom:16px;
+}
+.sector-body{font-size:15px;color:var(--light);line-height:1.8;margin-bottom:28px}
+.sector-bullets{list-style:none;display:flex;flex-direction:column;gap:8px}
+.sector-bullets li{
+  font-size:13px;color:var(--silver);padding-left:18px;position:relative;
+}
+.sector-bullets li::before{
+  content:'▹';position:absolute;left:0;color:var(--orange);font-size:11px;
+}
+
+/* ═══════════════════════════════════════
+   ABOUT PAGE
+═══════════════════════════════════════ */
+.about-body{background:var(--navy);padding:80px 56px}
+.about-story{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center;margin-bottom:96px;
+}
+.about-text .body-lg{margin-bottom:20px}
+.about-quote{
+  border-left:3px solid var(--orange);
+  padding:24px 32px;
+  background:rgba(232,113,10,.04);
+  margin:36px 0;
+  font-size:19px;font-style:italic;
+  color:var(--white);line-height:1.75;
+  font-weight:300;
+}
+.about-metrics{
+  background:var(--navy2);
+  border:1px solid rgba(255,255,255,.06);
+  padding:48px;
+}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.metric{}
+.metric-n{
+  font-family:var(--H);font-size:56px;font-weight:800;
+  color:var(--orange);line-height:1;display:block;
+}
+.metric-l{font-size:13px;color:var(--silver);margin-top:6px;line-height:1.4}
+
+.philosophy{
+  background:var(--navy2);
+  padding:72px 56px;margin:0 -56px;
+  border-top:1px solid rgba(255,255,255,.04);
+  border-bottom:1px solid rgba(255,255,255,.04);
+  margin-bottom:96px;
+}
+.philosophy-inner{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:48px;
+  max-width:1100px;margin:0 auto;
+}
+.phil-item{}
+.phil-num{
+  font-family:var(--H);font-size:48px;font-weight:800;
+  color:rgba(232,113,10,.2);line-height:1;margin-bottom:12px;
+}
+.phil-title{
+  font-family:var(--H);font-size:20px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:12px;
+}
+.phil-body{font-size:14px;color:var(--silver);line-height:1.7}
+
+.team-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:2px;margin-top:56px;
+}
+.team-card{
+  background:var(--navy2);padding:40px 28px;
+  border:1px solid rgba(255,255,255,.04);
+  transition:all .35s;
+}
+.team-card:hover{
+  background:var(--navy3);
+  border-color:rgba(232,113,10,.2);
+  transform:translateY(-6px);
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+}
+.team-avi{
+  width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(135deg,var(--mid),var(--navy3));
+  border:1px solid rgba(232,113,10,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin-bottom:20px;
+}
+.team-role{
+  font-family:var(--M);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:8px;
+}
+.team-name{
+  font-family:var(--H);font-size:20px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:12px;
+}
+.team-badge{
+  font-family:var(--M);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;padding:4px 10px;
+  background:rgba(232,113,10,.12);
+  border:1px solid rgba(232,113,10,.3);
+  color:var(--orange);display:inline-block;margin-bottom:14px;
+}
+.team-desc{font-size:13px;color:var(--silver);line-height:1.65}
+
+/* ═══════════════════════════════════════
+   CONTACT PAGE
+═══════════════════════════════════════ */
+.contact-body{background:var(--navy);padding:80px 56px}
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1.6fr;
+  gap:80px;align-items:start;
+}
+.contact-info-items{display:flex;flex-direction:column;gap:0;margin-top:40px}
+.ci{
+  display:flex;gap:20px;padding:28px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.ci:last-child{border-bottom:none}
+.ci-icon{font-size:22px;flex-shrink:0;width:36px}
+.ci-label{
+  font-family:var(--M);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:6px;
+}
+.ci-val{font-size:16px;color:var(--white)}
+.contact-promises{margin-top:48px}
+.contact-promises h4{
+  font-family:var(--M);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:16px;
+}
+.promise{
+  font-size:14px;color:var(--silver);line-height:1.8;
+  margin-bottom:8px;padding-left:20px;position:relative;
+}
+.promise::before{
+  content:'✓';position:absolute;left:0;color:var(--orange);
+  font-size:12px;
+}
+
+/* Form */
+.form-wrap{
+  background:var(--navy2);
+  border:1px solid rgba(255,255,255,.06);
+  padding:52px 44px;
+}
+.form-title{
+  font-family:var(--H);font-size:30px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--white);margin-bottom:8px;
+}
+.form-sub{font-size:14px;color:var(--silver);margin-bottom:36px}
+.fg{margin-bottom:20px}
+.fl{
+  display:block;font-family:var(--M);font-size:9px;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--silver);margin-bottom:8px;
+}
+.fi,.fsel,.fta{
+  width:100%;background:rgba(10,22,40,.8);
+  border:1px solid rgba(255,255,255,.08);
+  color:var(--off);font-family:var(--B);font-size:15px;
+  padding:14px 16px;outline:none;
+  transition:border-color .25s;-webkit-appearance:none;
+}
+.fi:focus,.fsel:focus,.fta:focus{border-color:var(--orange)}
+.fi::placeholder,.fta::placeholder{color:var(--silver)}
+.fta{min-height:130px;resize:vertical}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fsel option{background:var(--navy2)}
+.fsub{
+  width:100%;background:var(--orange);color:var(--navy);
+  font-family:var(--M);font-size:12px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:18px 32px;border:none;margin-top:8px;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+  transition:all .25s;
+}
+.fsub:hover{background:var(--orange2);transform:translateY(-2px)}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(28px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s,transform .7s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ═══════════════════════════════════════
+   MOBILE
+═══════════════════════════════════════ */
+@media(max-width:1024px){
+  nav{padding:0 24px}
+  .nav-center{display:none}
+  .section-wrap,.section-wrap-sm,.svc-page-body,.hiw-body,.ind-body,.about-body,.contact-body{padding:60px 24px}
+  .home-hero{padding:60px 24px}
+  .hero-stats{display:none}
+  .hero-tag-line{display:none}
+  .pillars-grid,.svc-grid,.creds-grid,.team-grid{grid-template-columns:1fr}
+  .engagement-grid,.sectors-grid,.svc-detail-grid{grid-template-columns:1fr}
+  .process-cols,.capability-intro,.about-story,.contact-grid{grid-template-columns:1fr}
+  .philosophy-inner{grid-template-columns:1fr}
+  .philosophy,.cm-full{margin:0;padding:60px 24px}
+  .footer-top{grid-template-columns:1fr 1fr}
+  .cta-band{padding:60px 24px}
+  .page-hero{padding:60px 24px 48px}
+  .frow{grid-template-columns:1fr}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+  .pillars,.services-overview,.process-preview,.creds{padding:80px 24px}
+}
+
+/* ═══════════════════════════════════════
+   INSIGHTS HUB
+═══════════════════════════════════════ */
+.insights-hub{background:var(--navy);padding:80px 52px}
+
+/* Featured */
+.feat-article{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border:1px solid rgba(30,64,128,.4);margin-bottom:80px;
+  overflow:hidden;transition:border-color .3s;cursor:pointer;
+}
+.feat-article:hover{border-color:rgba(232,113,10,.4)}
+.feat-img{
+  aspect-ratio:16/9;overflow:hidden;background:var(--navy2);
+}
+.feat-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.feat-article:hover .feat-img img{transform:scale(1.04)}
+.feat-body{
+  padding:52px 48px;background:var(--navy2);
+  display:flex;flex-direction:column;justify-content:center;
+}
+.feat-label{
+  font-family:var(--M);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--orange);
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.feat-label::before{content:'FEATURED';opacity:.5;margin-right:4px}
+.feat-title{
+  font-family:var(--H);font-size:clamp(26px,3vw,38px);font-weight:800;
+  text-transform:uppercase;letter-spacing:.02em;
+  color:var(--white);line-height:1.05;margin-bottom:16px;
+}
+.feat-excerpt{font-size:15px;color:var(--light);line-height:1.75;margin-bottom:28px;font-weight:300}
+.feat-meta{
+  display:flex;align-items:center;gap:20px;
+  font-family:var(--M);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--silver);
+}
+.feat-meta span{display:flex;align-items:center;gap:6px}
+
+/* Category filters */
+.cat-filters{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:48px;
+}
+.cat-btn{
+  font-family:var(--M);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;padding:10px 20px;
+  background:transparent;color:var(--silver);
+  border:1px solid rgba(30,64,128,.5);cursor:pointer;transition:all .2s;
+}
+.cat-btn:hover,.cat-btn.active{
+  background:var(--orange);border-color:var(--orange);color:var(--navy);
+}
+
+/* Article grid */
+.articles-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;margin-bottom:80px;
+}
+.art-card{
+  background:var(--navy2);border:1px solid rgba(30,64,128,.3);
+  overflow:hidden;cursor:pointer;transition:all .35s;
+  display:flex;flex-direction:column;
+}
+.art-card:hover{transform:translateY(-4px);border-color:rgba(232,113,10,.3);box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.art-card.hidden{display:none}
+.art-thumb{
+  aspect-ratio:16/9;overflow:hidden;background:var(--navy3);
+}
+.art-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.art-card:hover .art-thumb img{transform:scale(1.05)}
+.art-card-body{padding:28px;flex:1;display:flex;flex-direction:column}
+.art-cat{
+  font-family:var(--M);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:10px;
+}
+.art-card-title{
+  font-family:var(--H);font-size:20px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.03em;
+  color:var(--white);line-height:1.15;margin-bottom:10px;
+}
+.art-card-excerpt{font-size:13px;color:var(--silver);line-height:1.65;margin-bottom:16px;flex:1}
+.art-card-meta{
+  display:flex;align-items:center;gap:16px;
+  font-family:var(--M);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--silver);
+  padding-top:16px;border-top:1px solid rgba(30,64,128,.3);
+  margin-top:auto;
+}
+.art-views{display:flex;align-items:center;gap:5px}
+
+/* ─── Single Article View ─── */
+.article-view{background:var(--navy);display:none}
+.article-view.active{display:block}
+
+.art-hero{
+  position:relative;height:420px;overflow:hidden;
+  background:var(--navy2);
+}
+.art-hero img{width:100%;height:100%;object-fit:cover;opacity:.6}
+.art-hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(10,22,40,.3) 0%,rgba(10,22,40,.85) 100%);
+}
+.art-hero-content{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:48px 52px;
+}
+.art-back{
+  font-family:var(--M);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--silver);
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  margin-bottom:24px;transition:color .2s;background:none;border:none;
+}
+.art-back:hover{color:var(--orange)}
+.art-back::before{content:'←';font-size:14px}
+.art-hero-cat{
+  font-family:var(--M);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;
+}
+.art-hero-title{
+  font-family:var(--H);font-size:clamp(32px,4.5vw,60px);font-weight:800;
+  text-transform:uppercase;line-height:.95;letter-spacing:.01em;
+  color:var(--white);margin-bottom:20px;max-width:800px;
+}
+.art-hero-meta{
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  font-family:var(--M);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--silver);
+}
+.art-hero-meta span{display:flex;align-items:center;gap:6px}
+
+/* Article body */
+.art-body-wrap{
+  max-width:780px;margin:0 auto;padding:72px 52px;
+}
+.art-p{font-size:17px;color:var(--light);line-height:1.85;margin-bottom:24px;font-weight:300}
+.art-h{
+  font-family:var(--H);font-size:clamp(24px,3vw,36px);font-weight:800;
+  text-transform:uppercase;letter-spacing:.03em;
+  color:var(--white);margin:48px 0 20px;
+  padding-bottom:12px;border-bottom:1px solid rgba(30,64,128,.4);
+}
+.art-sh{
+  font-family:var(--H);font-size:clamp(18px,2vw,24px);font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--orange);margin:32px 0 14px;
+}
+.art-fig{margin:40px 0}
+.art-fig img{width:100%;border:1px solid rgba(30,64,128,.3);display:block}
+.art-fig figcaption{
+  font-family:var(--M);font-size:11px;letter-spacing:.1em;
+  color:var(--silver);padding:10px 0 0;text-align:center;
+}
+.art-video-wrap{
+  position:relative;padding-bottom:56.25%;height:0;
+  overflow:hidden;margin:40px 0;border:1px solid rgba(30,64,128,.3);
+}
+.art-video-wrap iframe{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+}
+.art-vid-cap{
+  font-family:var(--M);font-size:11px;letter-spacing:.1em;
+  color:var(--silver);margin-top:10px;text-align:center;
+}
+.art-quote{
+  border-left:3px solid var(--orange);
+  padding:20px 28px;background:rgba(232,113,10,.05);
+  margin:36px 0;font-size:19px;font-style:italic;
+  color:var(--white);line-height:1.7;font-weight:300;
+}
+.art-callout{
+  background:rgba(30,64,128,.2);border:1px solid rgba(30,64,128,.5);
+  border-left:3px solid var(--orange);
+  padding:20px 24px;margin:36px 0;
+  font-size:14px;color:var(--light);line-height:1.7;
+}
+.art-list-ul,.art-list-ol{
+  margin:0 0 24px 0;padding-left:0;list-style:none;
+  display:flex;flex-direction:column;gap:10px;
+}
+.art-list-ul li{
+  font-size:16px;color:var(--light);line-height:1.7;
+  padding-left:24px;position:relative;
+}
+.art-list-ul li::before{
+  content:'';position:absolute;left:0;top:10px;
+  width:10px;height:1px;background:var(--orange);
+}
+.art-list-ol{counter-reset:ol}
+.art-list-ol li{
+  font-size:16px;color:var(--light);line-height:1.7;
+  padding-left:36px;position:relative;
+  counter-increment:ol;
+}
+.art-list-ol li::before{
+  content:counter(ol);position:absolute;left:0;top:0;
+  font-family:var(--H);font-size:20px;font-weight:800;
+  color:var(--orange);line-height:1.4;
+}
+.art-table-wrap{overflow-x:auto;margin:36px 0}
+.art-table{width:100%;border-collapse:collapse}
+.art-table th{
+  background:var(--navy2);font-family:var(--M);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--orange);
+  padding:12px 16px;text-align:left;border:1px solid rgba(30,64,128,.4);
+}
+.art-table td{
+  padding:12px 16px;font-size:14px;color:var(--light);
+  border:1px solid rgba(30,64,128,.3);line-height:1.55;
+  vertical-align:top;
+}
+.art-table tr:nth-child(even) td{background:rgba(30,64,128,.08)}
+.art-hr{
+  border:none;border-top:1px solid rgba(30,64,128,.4);
+  margin:48px 0;
+}
+
+/* Article sidebar actions */
+.art-layout{display:grid;grid-template-columns:1fr 280px;gap:56px;align-items:start;max-width:1120px;margin:0 auto;padding:72px 52px}
+.art-sidebar{position:sticky;top:100px}
+.art-sidebar-box{
+  background:var(--navy2);border:1px solid rgba(30,64,128,.4);
+  padding:28px;margin-bottom:20px;
+}
+.art-sidebar-title{
+  font-family:var(--M);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:16px;
+}
+
+/* Share buttons */
+.share-btns{display:flex;flex-direction:column;gap:8px}
+.share-btn{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--M);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;padding:12px 16px;
+  background:transparent;color:var(--light);cursor:pointer;
+  border:1px solid rgba(30,64,128,.4);transition:all .2s;width:100%;
+  text-align:left;
+}
+.share-btn:hover{border-color:var(--orange);color:var(--orange)}
+.share-btn svg{flex-shrink:0;width:16px;height:16px}
+.share-btn.copied{border-color:var(--orange);color:var(--orange)}
+
+/* Useful widget */
+.useful-row{display:flex;gap:10px;margin-top:4px}
+.useful-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--M);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px;background:transparent;color:var(--silver);
+  border:1px solid rgba(30,64,128,.4);cursor:pointer;transition:all .2s;
+}
+.useful-btn:hover{border-color:var(--orange);color:var(--orange)}
+.useful-btn.selected-yes{background:rgba(22,163,74,.15);border-color:rgba(22,163,74,.5);color:#4ade80}
+.useful-btn.selected-no{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171}
+
+/* Related articles */
+.related-card{
+  display:flex;gap:14px;padding:14px 0;
+  border-bottom:1px solid rgba(30,64,128,.25);cursor:pointer;
+  transition:all .2s;
+}
+.related-card:last-child{border-bottom:none}
+.related-card:hover .related-title{color:var(--orange)}
+.related-thumb{
+  width:60px;height:60px;flex-shrink:0;overflow:hidden;
+  background:var(--navy3);
+}
+.related-thumb img{width:100%;height:100%;object-fit:cover}
+.related-cat{
+  font-family:var(--M);font-size:9px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--orange);margin-bottom:4px;
+}
+.related-title{
+  font-family:var(--H);font-size:14px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.03em;color:var(--white);
+  line-height:1.2;transition:color .2s;
+}
+
+/* Empty state */
+.no-articles{
+  text-align:center;padding:80px 20px;
+  font-family:var(--M);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--silver);
+}
+
+@media(max-width:1024px){
+  .feat-article{grid-template-columns:1fr}
+  .articles-grid{grid-template-columns:1fr 1fr}
+  .art-layout{grid-template-columns:1fr;padding:48px 20px}
+  .art-sidebar{position:static}
+  .share-btns{flex-direction:row;flex-wrap:wrap}
+  .share-btn{width:auto;flex:1}
+  .art-hero-content,.art-body-wrap{padding-left:20px;padding-right:20px}
+  .insights-hub{padding:64px 20px}
+}
+@media(max-width:640px){
+  .articles-grid{grid-template-columns:1fr}
+  .art-hero{height:320px}
+  .useful-row{flex-direction:column}
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ══════════════════════════════════════
+     NAVIGATION
+══════════════════════════════════════ -->
+<nav id="nav">
+  <div class="nav-logo" onclick="go('home')">
+    <span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span>
+  </div>
+  <ul class="nav-center">
+    <li><a onclick="go('home')"       id="nl-home"    class="active">Home</a></li>
+    <li><a onclick="go('services')"   id="nl-services">Services</a></li>
+    <li><a onclick="go('hiw')"        id="nl-hiw">How We Work</a></li>
+    <li><a onclick="go('industries')" id="nl-industries">Industries</a></li>
+    <li><a onclick="go('about')"      id="nl-about">About</a></li>
+    <li><a onclick="go('insights')"  id="nl-insights">Insights</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-nav" onclick="go('contact')">Request a Quote</button>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════
+     HOME
+══════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- Hero -->
+  <div class="home-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-diag"></div>
+    <div class="hero-diag2"></div>
+    <div class="hero-tag-line">Full Manufacturing Lifecycle Partner</div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">Engineering · Manufacturing · Supply Chain</div>
+      <h1 class="hero-h1">
+        <span class="line1">Sharp</span>
+        <span class="line2">by Design</span>
+        <span class="line3">Sigma by Standard</span>
+      </h1>
+      <div class="hero-tagline">sharpsigma.com — Full-Lifecycle Manufacturing Partner</div>
+      <p class="hero-body">
+        From first concept to serial production — SharpSigma delivers engineering expertise, manufacturing consultancy, and end-to-end parts delivery under one accountable roof.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="go('contact')">Request a Quote →</button>
+        <button class="btn-ghost" onclick="go('services')">Explore Services</button>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-num">7+</span><span class="hstat-lbl">Years<br>Manufacturing</span></div>
+      <div class="hstat"><span class="hstat-num">3</span><span class="hstat-lbl">Business<br>Pillars</span></div>
+      <div class="hstat"><span class="hstat-num">8+</span><span class="hstat-lbl">Service<br>Areas</span></div>
+      <div class="hstat"><span class="hstat-num">4</span><span class="hstat-lbl">Sectors<br>Served</span></div>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <div class="ticker-item"><span class="ticker-dot"></span>Engineering & Design</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Precision Manufacturing</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Quality Systems</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Lean & Optimization</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Cost Engineering</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Greenfield & Brownfield</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Test Solution Design</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Turnkey Parts Delivery</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Contract Manufacturing Setup</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Industrial Automation</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Validation & Reliability</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Technical Documentation</div>
+      <!-- duplicate -->
+      <div class="ticker-item"><span class="ticker-dot"></span>Engineering & Design</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Precision Manufacturing</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Quality Systems</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Lean & Optimization</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Cost Engineering</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Greenfield & Brownfield</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Test Solution Design</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Turnkey Parts Delivery</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Contract Manufacturing Setup</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Industrial Automation</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Validation & Reliability</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Technical Documentation</div>
+    </div>
+  </div>
+
+  <!-- Three Pillars -->
+  <div class="pillars">
+    <div class="eyebrow">How We Deliver</div>
+    <h2 class="display-lg">Three Ways <span class="amber">We Serve</span><br><span class="dim">You</span></h2>
+    <div class="pillars-grid" style="margin-top:64px">
+      <div class="pillar" onclick="go('services')">
+        <span class="pillar-num">01</span>
+        <span class="pillar-icon">🔧</span>
+        <div class="pillar-label">Pillar One</div>
+        <div class="pillar-title">Engineering &<br>Manufacturing</div>
+        <p class="pillar-body">We do the work ourselves. Design, machining, electronics, test solutions, automation — in-house technical capability across the full production chain.</p>
+        <ul class="pillar-items">
+          <li>Product Design & DFM</li>
+          <li>Precision Machining</li>
+          <li>Test Solution Design</li>
+          <li>Electronics Manufacturing</li>
+          <li>Industrial Automation</li>
+          <li>Validation & Reliability</li>
+        </ul>
+      </div>
+      <div class="pillar" onclick="go('services')">
+        <span class="pillar-num">02</span>
+        <span class="pillar-icon">🏭</span>
+        <div class="pillar-label">Pillar Two</div>
+        <div class="pillar-title">Manufacturing<br>Consultancy</div>
+        <p class="pillar-body">We improve your operations. Facility design, quality systems, cost engineering, lean optimization — advisory backed by real manufacturing experience, not theory.</p>
+        <ul class="pillar-items">
+          <li>Facility Consulting (Greenfield & Brownfield)</li>
+          <li>Quality Systems & Compliance</li>
+          <li>Lean & Process Optimization</li>
+          <li>Cost Engineering & Should-Costing</li>
+          <li>Make vs. Buy Analysis</li>
+          <li>Technical Documentation</li>
+        </ul>
+      </div>
+      <div class="pillar" onclick="go('services')">
+        <span class="pillar-num">03</span>
+        <span class="pillar-icon">🔗</span>
+        <div class="pillar-label">Pillar Three</div>
+        <div class="pillar-title">Supply Chain &<br>CM Services</div>
+        <p class="pillar-body">We manage your manufacturing supply chain. Turnkey parts delivery or full contract manufacturing setup — from search and qualification through serial production.</p>
+        <ul class="pillar-items">
+          <li>Turnkey Parts Manufacturing</li>
+          <li>CM Search & Identification</li>
+          <li>Technical Audit & Qualification</li>
+          <li>Contract Structuring</li>
+          <li>Launch & Ramp-Up</li>
+          <li>Continuous Improvement & Serial</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services Overview -->
+  <div class="services-overview">
+    <div class="eyebrow">Services</div>
+    <h2 class="display-lg">Complete Capability<br><span class="amber">Across 8+ Areas</span></h2>
+    <p class="body-lg" style="max-width:600px;margin-top:20px">One partner for every phase of the manufacturing lifecycle — from initial sketch to serial delivery.</p>
+    <div class="svc-grid">
+      <div class="svc-card reveal"><span class="svc-n">01</span><span class="svc-icon">📐</span><div class="svc-title">Product Design</div><p class="svc-body">Concept to production-ready — DFM, DFA, DFC, reverse engineering, and complete drawing packages.</p><div class="chip-row"><span class="chip">DFM</span><span class="chip">DFA</span><span class="chip">CAD</span></div></div>
+      <div class="svc-card reveal"><span class="svc-n">02</span><span class="svc-icon">⚙️</span><div class="svc-title">Precision Machining</div><p class="svc-body">CNC machining for complex, tight-tolerance components. Prototyping through production volumes.</p><div class="chip-row"><span class="chip">CNC</span><span class="chip">Tolerances</span><span class="chip">Production</span></div></div>
+      <div class="svc-card reveal"><span class="svc-n">03</span><span class="svc-icon">🏭</span><div class="svc-title">Facility Consulting</div><p class="svc-body">Greenfield plant launches and brownfield transformations. Real experience building and retooling manufacturing operations.</p><div class="chip-row"><span class="chip">Greenfield</span><span class="chip">Brownfield</span><span class="chip">Line Design</span></div></div>
+      <div class="svc-card reveal"><span class="svc-n">04</span><span class="svc-icon">📊</span><div class="svc-title">Quality & Optimization</div><p class="svc-body">Automotive-grade quality systems, lean manufacturing, process optimization, and OEE improvement.</p><div class="chip-row"><span class="chip">Quality</span><span class="chip">Lean</span><span class="chip">OEE</span></div></div>
+      <div class="svc-card reveal"><span class="svc-n">05</span><span class="svc-icon">💰</span><div class="svc-title">Cost Engineering</div><p class="svc-body">Should-cost analysis, cost reduction programs, BOM optimization, and total cost of ownership modelling.</p><div class="chip-row"><span class="chip">Should-Cost</span><span class="chip">Cost-Down</span><span class="chip">TCO</span></div></div>
+      <div class="svc-card reveal"><span class="svc-n">06</span><span class="svc-icon">🔬</span><div class="svc-title">Test Solution Design</div><p class="svc-body">Custom test fixtures, validation methodology, and end-of-line test integration for electronics and mechanical assemblies.</p><div class="chip-row"><span class="chip">Test Fixtures</span><span class="chip">Validation</span><span class="chip">EOL</span></div></div>
+      <div class="svc-card featured reveal"><span class="svc-n">07</span><span class="svc-icon">📦</span><div class="svc-title">Turnkey Parts Manufacturing</div><p class="svc-body">Give us a requirement. We deliver finished, inspected parts — managing the entire production process. Full accountability, zero complexity on your end.</p><div class="chip-row"><span class="chip chip-hot">Turnkey</span><span class="chip chip-hot">End-to-End</span><span class="chip">Inspected</span></div></div>
+      <div class="svc-card featured reveal"><span class="svc-n">08</span><span class="svc-icon">🤝</span><div class="svc-title">CM Setup & Full Lifecycle</div><p class="svc-body">Search, audit, qualify, contract, launch, improve, and manage your contract manufacturing partnerships — the complete CM lifecycle.</p><div class="chip-row"><span class="chip chip-hot">Full Lifecycle</span><span class="chip chip-hot">CM Strategy</span><span class="chip">Serial</span></div></div>
+      <div class="svc-card reveal" style="background:rgba(255,255,255,.02);border-style:dashed;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:12px">
+        <div style="font-size:28px">💬</div>
+        <div class="svc-title" style="font-size:17px;color:var(--silver)">Not Sure?</div>
+        <p class="svc-body" style="font-size:13px">Tell us your challenge — we'll tell you the right approach.</p>
+        <button class="btn-primary" style="font-size:11px;padding:12px 24px" onclick="go('contact')">Talk to Us</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Process Preview -->
+  <div class="process-preview">
+    <div class="eyebrow">How We Work</div>
+    <h2 class="display-lg">The <span class="amber">SharpSigma</span><br>Process</h2>
+    <div class="process-cols">
+      <div>
+        <p class="body-lg" style="margin-bottom:40px">Every engagement follows a structured approach — clear scope, defined outcomes, and total accountability throughout.</p>
+        <div class="process-steps">
+          <div class="pstep"><div class="pstep-num">01</div><div class="pstep-content"><div class="pstep-title">Understand</div><p class="pstep-body">We start by understanding your challenge deeply — requirements, constraints, timelines, and what a successful outcome actually looks like.</p></div></div>
+          <div class="pstep"><div class="pstep-num">02</div><div class="pstep-content"><div class="pstep-title">Scope & Plan</div><p class="pstep-body">A defined engagement with measurable outcomes. No vague retainers — we agree on scope, deliverables, and accountability before we start.</p></div></div>
+          <div class="pstep"><div class="pstep-num">03</div><div class="pstep-content"><div class="pstep-title">Execute</div><p class="pstep-body">We don't just advise and leave. Our team does the actual work — engineering, production, quality oversight, or all three.</p></div></div>
+          <div class="pstep"><div class="pstep-num">04</div><div class="pstep-content"><div class="pstep-title">Deliver & Support</div><p class="pstep-body">Everything documented, handed over, and stable. Ongoing support available. We stay until it works.</p></div></div>
+        </div>
+        <div style="margin-top:36px">
+          <button class="btn-primary" onclick="go('hiw')">Full Process Detail →</button>
+        </div>
+      </div>
+      <div>
+        <div class="cm-lifecycle">
+          <div class="cm-lifecycle-title">CM Full Lifecycle — Preview</div>
+          <div class="cm-step"><div class="cm-step-dot">1</div><div class="cm-step-info"><div class="cm-step-name">Requirements Definition</div><p class="cm-step-desc">Map manufacturing needs, volumes, quality standards, and expectations.</p></div></div>
+          <div class="cm-step"><div class="cm-step-dot">2</div><div class="cm-step-info"><div class="cm-step-name">Market Search</div><p class="cm-step-desc">Identify suitable manufacturing partners aligned to your requirements.</p></div></div>
+          <div class="cm-step"><div class="cm-step-dot">3</div><div class="cm-step-info"><div class="cm-step-name">Technical Audit</div><p class="cm-step-desc">On-site capability, quality, and capacity assessment.</p></div></div>
+          <div class="cm-step"><div class="cm-step-dot">4</div><div class="cm-step-info"><div class="cm-step-name">Contract & Structuring</div><p class="cm-step-desc">Pricing, quality clauses, delivery terms, and escalation processes.</p></div></div>
+          <div class="cm-step"><div class="cm-step-dot">5</div><div class="cm-step-info"><div class="cm-step-name">Launch & Ramp-Up</div><p class="cm-step-desc">First article, initial production oversight, and ramp stabilization.</p></div></div>
+          <div class="cm-step"><div class="cm-step-dot">6</div><div class="cm-step-info"><div class="cm-step-name">Serial & Continuous Improvement</div><p class="cm-step-desc">Long-term supplier management, re-audits, and performance improvement.</p></div></div>
+          <div style="margin-top:28px"><button class="btn-ghost" style="font-size:11px;padding:12px 24px" onclick="go('hiw')">See Full Detail →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credentials -->
+  <div class="creds">
+    <div class="eyebrow">Our Depth</div>
+    <h2 class="display-lg">What We Bring<br><span class="amber">to Every Project</span></h2>
+    <p class="body-lg" style="max-width:600px;margin-top:20px">Credentials that come from having done the actual work — not studied it from the outside.</p>
+    <div class="creds-grid">
+      <div class="cred-card reveal"><div class="cred-icon">⚙️</div><div class="cred-title">Machining Expertise</div><p class="cred-body">7+ years of shop floor experience producing complex, tight-tolerance components across multiple industries. Real judgment, not textbook knowledge.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">📐</div><div class="cred-title">Design Engineering</div><p class="cred-body">Senior mechanical design experience — from concept through production-ready packages. Designs built to be manufactured, not just drafted.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">✅</div><div class="cred-title">Quality Systems</div><p class="cred-body">Automotive-grade quality management expertise at the highest auditing level. We build systems that survive real-world scrutiny.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">🏗️</div><div class="cred-title">Facility Experience</div><p class="cred-body">Hands-on experience launching greenfield operations and transforming brownfield facilities. Both — giving us a complete manufacturing perspective.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">⚡</div><div class="cred-title">Electronics Manufacturing</div><p class="cred-body">7+ years in high-reliability electronics production. Traceability, ESD, quality systems, and precision assemblies managed at scale.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">💰</div><div class="cred-title">Cost Engineering</div><p class="cred-body">Should-cost modelling and cost reduction from people who understand manufacturing economics from the inside — not from spreadsheets alone.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">🔬</div><div class="cred-title">Test & Validation</div><p class="cred-body">Custom test solution design and formal reliability validation. Quality proved by testing, not assumed from inspection.</p></div>
+      <div class="cred-card reveal"><div class="cred-icon">🤝</div><div class="cred-title">Licensed Engineering</div><p class="cred-body">Professionally licensed engineering on the team — regulated authority, technical sign-off, and accountability that clients and regulators recognize.</p></div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-band">
+    <div>
+      <div class="display-md" style="margin-bottom:12px">Ready to Build<br>Something Precise?</div>
+      <p>Tell us what you need. We respond within one business day.</p>
+    </div>
+    <button class="btn-white" onclick="go('contact')">Request a Quote →</button>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="nav-logo" onclick="go('home')" style="margin-bottom:16px"><span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span></div>
+        <div class="footer-tagline">Sharp by Design. Sigma by Standard.</div>
+        <p class="footer-desc">Full-lifecycle manufacturing partner — engineering, consultancy, and turnkey parts delivery under one accountable roof.</p>
+        <div class="footer-email">info@sharpsigma.com</div>
+      </div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a onclick="go('services')">Product Design</a></li><li><a onclick="go('services')">Precision Machining</a></li><li><a onclick="go('services')">Facility Consulting</a></li><li><a onclick="go('services')">Quality & Optimization</a></li><li><a onclick="go('services')">Cost Engineering</a></li><li><a onclick="go('services')">Turnkey Parts</a></li><li><a onclick="go('services')">CM Lifecycle</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="go('about')">About Us</a></li><li><a onclick="go('hiw')">How We Work</a></li><li><a onclick="go('industries')">Industries</a></li><li><a onclick="go('contact')">Contact</a></li><li><a onclick="go('contact')">Request a Quote</a></li></ul></div>
+      <div class="footer-col"><h4>Capabilities</h4><ul><li><a onclick="go('services')">Test & Validation</a></li><li><a onclick="go('services')">Industrial Automation</a></li><li><a onclick="go('services')">Electronics Mfg</a></li><li><a onclick="go('services')">Technical Documentation</a></li><li><a onclick="go('hiw')">CM Setup</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 SharpSigma. All rights reserved. · www.sharpsigma.com</div>
+      <div class="footer-mark">SHARP BY DESIGN. SIGMA BY STANDARD.</div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SERVICES PAGE
+══════════════════════════════════════ -->
+<div id="page-services" class="page">
+  <div class="page-hero">
+    <div class="page-hero-line"></div>
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-content">
+      <div class="breadcrumb">SharpSigma <span class="sep">/</span> Services</div>
+      <h1 class="display-lg">Our <span class="amber">Services</span></h1>
+      <p class="page-hero-subtitle">Eight capabilities across three business lines — from in-house engineering and manufacturing to full-lifecycle contract manufacturing management. One partner. Complete accountability.</p>
+    </div>
+  </div>
+
+  <div class="svc-page-body">
+
+    <!-- Pillar 1 -->
+    <div class="pillar-section">
+      <div class="pillar-header">
+        <div class="pillar-header-left">
+          <div class="pillar-header-tag">Pillar One</div>
+          <div class="pillar-header-title">Engineering & Manufacturing Services</div>
+          <p class="pillar-header-desc">We do the technical work ourselves — design, machining, testing, automation, and electronics production backed by deep in-house expertise.</p>
+        </div>
+      </div>
+      <div class="svc-detail-grid">
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">📐</span>
+          <div class="sdc-title">Product Design & Engineering</div>
+          <p class="sdc-body">From concept sketches to production-ready drawing packages. Our design team brings senior-level mechanical design experience across automotive, electronics, and industrial applications — with professionally licensed engineering oversight on every project.</p>
+          <ul class="sdc-list"><li>Concept development and 3D modeling</li><li>Design for Manufacturability (DFM)</li><li>Design for Assembly (DFA)</li><li>Design for Cost (DFC)</li><li>Reverse engineering and redesign</li><li>Complete drawing and documentation packages</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">⚙️</span>
+          <div class="sdc-title">Precision Machining</div>
+          <p class="sdc-body">7+ years of hands-on shop floor experience producing complex, tight-tolerance components. We work across a range of metals, alloys, and specialty materials — from single-unit prototypes through production volumes. Engineering oversight is embedded in every job.</p>
+          <ul class="sdc-list"><li>CNC turning and multi-axis milling</li><li>Complex geometries and tight tolerances</li><li>Metals, alloys, specialty materials</li><li>Prototype through production volumes</li><li>Drawing review and DFM input</li><li>First-article inspection and documentation</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">🔬</span>
+          <div class="sdc-title">Test Solution Design</div>
+          <p class="sdc-body">Quality has to be validated — not assumed. We design custom test fixtures, methodologies, and end-of-line test processes that integrate cleanly into your production flow. Built for both electronics and mechanical assemblies. Validation as part of the product, not an afterthought.</p>
+          <ul class="sdc-list"><li>Test fixture design and build</li><li>Test methodology development</li><li>Electronics functional test design</li><li>Mechanical validation and gauging</li><li>In-process and end-of-line integration</li><li>Test documentation and work instructions</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">🔌</span>
+          <div class="sdc-title">Electronics Manufacturing</div>
+          <p class="sdc-body">7+ years in high-reliability electronics manufacturing — we understand what ESD discipline, traceability, and quality at scale actually require. From precision enclosures to complex assemblies across automotive, aerospace, and industrial applications.</p>
+          <ul class="sdc-list"><li>Precision enclosures and assemblies</li><li>Electronics manufacturing process design</li><li>High-reliability component manufacturing</li><li>Traceability and documentation systems</li><li>ESD controls and process validation</li><li>Cross-sector: automotive, aerospace, industrial</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">🤖</span>
+          <div class="sdc-title">Industrial Automation</div>
+          <p class="sdc-body">PLC programming, robotics integration, vision systems, and conveyor automation. As manufacturers face growing pressure to automate, SharpSigma can design and integrate automation solutions that fit your specific production environment — particularly valuable in greenfield and brownfield facility projects.</p>
+          <ul class="sdc-list"><li>PLC programming and integration</li><li>Robotic cell design and commissioning</li><li>Vision system integration</li><li>Conveyor and materials handling automation</li><li>Line automation for new and existing facilities</li><li>Automation feasibility and ROI analysis</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">🛡️</span>
+          <div class="sdc-title">Validation & Reliability Engineering</div>
+          <p class="sdc-body">Formal product qualification — HALT/HASS testing planning, reliability prediction, FMEA-driven validation plans, and life-cycle testing design. We extend your test capability into formal certification-level validation for components and assemblies that must survive in the field.</p>
+          <ul class="sdc-list"><li>Reliability prediction and analysis</li><li>HALT/HASS test planning</li><li>FMEA-driven validation plans</li><li>Life-cycle testing design</li><li>Qualification report development</li><li>Field failure analysis support</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Pillar 2 -->
+    <div class="pillar-section" style="padding-top:80px">
+      <div class="pillar-header">
+        <div class="pillar-header-left">
+          <div class="pillar-header-tag">Pillar Two</div>
+          <div class="pillar-header-title">Manufacturing & Operations Consultancy</div>
+          <p class="pillar-header-desc">We improve how you manufacture — from facility design and quality systems through lean optimization, cost engineering, and operational documentation.</p>
+        </div>
+      </div>
+      <div class="svc-detail-grid">
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">🏭</span>
+          <div class="sdc-title">Facility Consulting</div>
+          <p class="sdc-body">Direct, hands-on experience both launching manufacturing operations from scratch (greenfield) and transforming existing facilities (brownfield). This combination gives us a complete perspective. Whether you're building a new plant, reshoring production, or retooling an acquired facility — we've done it before.</p>
+          <ul class="sdc-list"><li>Greenfield facility planning and launch</li><li>Brownfield retooling and expansion</li><li>Production line design and flow analysis</li><li>Equipment specification and selection</li><li>Ramp-up planning and readiness assessment</li><li>Operational documentation and standard work</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">✅</span>
+          <div class="sdc-title">Quality Systems</div>
+          <p class="sdc-body">We build quality systems that pass real audits — not just look good on paper. Our quality expertise sits at the highest auditing level, with operational experience on both sides of the audit table. We know what exacting industry customers actually demand, and we build for it.</p>
+          <ul class="sdc-list"><li>Quality management system development</li><li>Automotive-grade quality system expertise</li><li>Internal audit planning and execution</li><li>Process FMEA and control plan development</li><li>PPAP preparation and support</li><li>New program launch quality support</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">📊</span>
+          <div class="sdc-title">Lean & Process Optimization</div>
+          <p class="sdc-body">Waste elimination, cycle time reduction, throughput improvement, and OEE optimization — applied by practitioners who understand manufacturing floors. Value stream mapping, Kaizen facilitation, and structured problem-solving from people who've implemented lean in real environments.</p>
+          <ul class="sdc-list"><li>Value stream mapping and analysis</li><li>Waste identification and elimination</li><li>Cycle time and throughput improvement</li><li>OEE analysis and improvement</li><li>Kaizen facilitation</li><li>5S implementation and sustainment</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">💰</span>
+          <div class="sdc-title">Cost Engineering</div>
+          <p class="sdc-body">Should-costing and cost engineering is one of the most valued and least available capabilities in manufacturing. We model what parts and processes should cost from the ground up — giving procurement teams, engineers, and executives an independent basis for cost negotiation, design decisions, and supplier selection.</p>
+          <ul class="sdc-list"><li>Should-cost analysis and modelling</li><li>Cost reduction program development</li><li>Design-for-cost analysis (DFC)</li><li>BOM optimization and rationalization</li><li>Supplier cost benchmarking</li><li>Total cost of ownership modelling</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">📋</span>
+          <div class="sdc-title">Technical Documentation</div>
+          <p class="sdc-body">SOPs, work instructions, quality manuals, control plans, training materials — every manufacturer needs comprehensive documentation, and almost none enjoy producing it. We write clear, accurate, operator-friendly documentation that meets regulatory and customer requirements.</p>
+          <ul class="sdc-list"><li>Standard operating procedures (SOPs)</li><li>Work instructions and visual aids</li><li>Quality manuals and procedures</li><li>Control plans and inspection plans</li><li>Training materials and competency frameworks</li><li>Document control system setup</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">⚖️</span>
+          <div class="sdc-title">Make vs. Buy Analysis</div>
+          <p class="sdc-body">Should you manufacture in-house or source externally? We provide structured, data-driven make-vs-buy analysis that accounts for true total cost, risk, capability, and strategic fit — giving leadership the information to make the right long-term decision.</p>
+          <ul class="sdc-list"><li>Total cost of make vs. buy modelling</li><li>Capability gap assessment</li><li>Risk analysis and mitigation</li><li>Strategic fit evaluation</li><li>Transition planning and support</li><li>Ongoing monitoring framework</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Pillar 3 -->
+    <div class="pillar-section" style="padding-top:80px">
+      <div class="pillar-header">
+        <div class="pillar-header-left">
+          <div class="pillar-header-tag">Pillar Three</div>
+          <div class="pillar-header-title">Supply Chain & CM Services</div>
+          <p class="pillar-header-desc">We manage your manufacturing supply chain — from turnkey parts delivery to the complete contract manufacturing lifecycle: search, audit, contract, launch, improve, serial.</p>
+        </div>
+      </div>
+      <div class="svc-detail-grid">
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">📦</span>
+          <div class="sdc-title">Turnkey Parts Manufacturing</div>
+          <p class="sdc-body">The simplest engagement: you give us a drawing or a requirement, we deliver finished, inspected parts. SharpSigma manages the entire production process — with engineering review and quality oversight at every stage. One point of contact. Full accountability from order to delivery.</p>
+          <ul class="sdc-list"><li>Single point of contact for all production</li><li>Engineering review of all drawings</li><li>Quality oversight throughout production</li><li>Inspection and full documentation on delivery</li><li>On-time delivery accountability</li><li>Scalable — prototype to production volume</li></ul>
+        </div>
+        <div class="svc-detail-card reveal">
+          <span class="sdc-icon">🤝</span>
+          <div class="sdc-title">Full-Lifecycle CM Support</div>
+          <p class="sdc-body">For clients who want to build their own contract manufacturing relationships, we manage the entire CM lifecycle — from identifying and technically qualifying partners through contract structuring, launch, ongoing performance management, and continuous improvement. The complete picture, under one engagement.</p>
+          <ul class="sdc-list"><li>Requirements definition and CM strategy</li><li>Market search and partner identification</li><li>Technical audit and qualification</li><li>Contract and quality framework structuring</li><li>Launch oversight and first-article approval</li><li>Serial production management and re-audits</li></ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta-band">
+    <div><div class="display-md" style="margin-bottom:12px">Not Sure Which<br>Service Fits?</div><p>Describe your challenge and we'll recommend the right approach — no obligation.</p></div>
+    <button class="btn-white" onclick="go('contact')">Talk to an Engineer →</button>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand"><div class="nav-logo" onclick="go('home')" style="margin-bottom:16px"><span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span></div><div class="footer-tagline">Sharp by Design. Sigma by Standard.</div><p class="footer-desc">Full-lifecycle manufacturing partner — engineering, consultancy, and turnkey parts delivery.</p><div class="footer-email">info@sharpsigma.com</div></div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a onclick="go('services')">All Services</a></li><li><a onclick="go('contact')">Get a Quote</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="go('about')">About Us</a></li><li><a onclick="go('contact')">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>More</h4><ul><li><a onclick="go('hiw')">How We Work</a></li><li><a onclick="go('industries')">Industries</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 SharpSigma. All rights reserved.</div><div class="footer-mark">SHARP BY DESIGN. SIGMA BY STANDARD.</div></div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     HOW WE WORK PAGE
+══════════════════════════════════════ -->
+<div id="page-hiw" class="page">
+  <div class="page-hero">
+    <div class="page-hero-line"></div>
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-content">
+      <div class="breadcrumb">SharpSigma <span class="sep">/</span> How We Work</div>
+      <h1 class="display-lg">How We <span class="amber">Work</span></h1>
+      <p class="page-hero-subtitle">Structured engagements, defined outcomes, complete accountability. Every SharpSigma engagement follows a clear process — so you always know where things stand.</p>
+    </div>
+  </div>
+
+  <div class="hiw-body">
+
+    <!-- Engagement Models -->
+    <div style="margin-bottom:96px">
+      <div class="eyebrow">Engagement Models</div>
+      <h2 class="display-md" style="margin-bottom:48px">Three Ways to <span class="amber">Engage</span></h2>
+      <div class="engagement-grid">
+        <div class="eng-card reveal">
+          <span class="eng-num">01</span>
+          <span class="eng-icon">📦</span>
+          <div class="eng-title">Turnkey Delivery</div>
+          <p class="eng-body">Give us a drawing or a requirement. We deliver finished, inspected parts — managing all production complexity on your behalf. Full accountability. Zero operational burden on your end.</p>
+        </div>
+        <div class="eng-card reveal">
+          <span class="eng-num">02</span>
+          <span class="eng-icon">🏭</span>
+          <div class="eng-title">Consultancy Project</div>
+          <p class="eng-body">A defined scope with measurable deliverables. We come in, do the work — quality systems, facility design, cost engineering, lean implementation — document it, and hand it over properly.</p>
+        </div>
+        <div class="eng-card reveal">
+          <span class="eng-num">03</span>
+          <span class="eng-icon">🔗</span>
+          <div class="eng-title">CM Partnership Program</div>
+          <p class="eng-body">The most comprehensive engagement — full lifecycle contract manufacturing management. We build, qualify, and manage your CM supply chain from search through serial production.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CM Full Lifecycle -->
+    <div class="eyebrow">The CM Lifecycle</div>
+    <h2 class="display-md" style="margin-bottom:16px">Full Contract Manufacturing <span class="amber">Lifecycle</span></h2>
+    <p class="body-lg" style="max-width:640px;margin-bottom:0">Most firms offer pieces of this. SharpSigma manages the entire CM lifecycle — from the first requirements conversation through long-term serial production management. Eight structured phases, one accountable partner.</p>
+
+    <div class="cm-full" style="margin-top:56px">
+      <div class="cm-full-inner">
+        <div class="cm-phases">
+          <div class="cm-phase reveal"><div class="cm-phase-num">01</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase One</div><div class="cm-phase-title">Requirements Definition</div><p class="cm-phase-body">We begin by mapping your manufacturing requirements in full detail — product categories, volumes, quality standards, lead time expectations, geographic constraints, and long-term strategic objectives. A clear requirements baseline prevents misalignment at every subsequent phase.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">02</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Two</div><div class="cm-phase-title">Market Search & Identification</div><p class="cm-phase-body">We identify manufacturing partners that fit your requirements — drawing on industry knowledge, technical networks, and structured search criteria. Candidates are screened for capability, capacity, financial stability, quality track record, and cultural fit before any technical evaluation begins.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">03</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Three</div><div class="cm-phase-title">Technical Audit & Assessment</div><p class="cm-phase-body">On-site technical audit of shortlisted candidates. We assess manufacturing capability and equipment, quality management systems, process controls, capacity and scalability, workforce competency, and supply chain depth. Our engineering and quality expertise means we evaluate at a technical depth most procurement teams can't match.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">04</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Four</div><div class="cm-phase-title">Qualification</div><p class="cm-phase-body">Formal supplier qualification against your specific requirements and applicable industry standards. Sample part production, first-article inspection, capability studies, and documented qualification reports. We don't recommend a partner to you until they've earned it through the process.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">05</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Five</div><div class="cm-phase-title">Contract & Relationship Structuring</div><p class="cm-phase-body">We help structure the commercial and quality framework of the CM relationship — pricing models, quality clauses, delivery and lead-time terms, non-conformance and escalation processes, IP protections, and exit provisions. A well-structured agreement prevents the majority of CM relationship failures.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">06</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Six</div><div class="cm-phase-title">Launch & Ramp-Up Oversight</div><p class="cm-phase-body">We oversee the initial production runs — first-article approval, process validation, initial quality monitoring, and ramp-up to target volume and quality levels. We stay through this phase until performance is demonstrably stable. Handoff happens when it's genuinely earned, not on a calendar date.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">07</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Seven</div><div class="cm-phase-title">Continuous Improvement</div><p class="cm-phase-body">Serial production is never static. We support ongoing performance improvement — corrective action management, process improvement initiatives, cost reduction programs, and quality system development at your CM partner. The relationship improves over time, not just maintains.</p></div></div>
+          <div class="cm-phase reveal"><div class="cm-phase-num">08</div><div class="cm-phase-content"><div class="cm-phase-tag">Phase Eight</div><div class="cm-phase-title">Serial Management & Re-Audit</div><p class="cm-phase-body">Long-term supplier relationship management — periodic re-audits, capacity planning, performance scorecarding, and proactive risk management. We maintain the oversight that keeps your supply chain resilient as volumes, products, and market conditions evolve.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta-band" style="margin-top:80px">
+    <div><div class="display-md" style="margin-bottom:12px">Ready to Start<br>a Conversation?</div><p>Tell us your challenge. We'll tell you which engagement model makes the most sense.</p></div>
+    <button class="btn-white" onclick="go('contact')">Get in Touch →</button>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand"><div class="nav-logo" onclick="go('home')" style="margin-bottom:16px"><span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span></div><div class="footer-tagline">Sharp by Design. Sigma by Standard.</div><p class="footer-desc">Full-lifecycle manufacturing partner.</p><div class="footer-email">info@sharpsigma.com</div></div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a onclick="go('services')">All Services</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="go('about')">About Us</a></li><li><a onclick="go('contact')">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>More</h4><ul><li><a onclick="go('industries')">Industries</a></li><li><a onclick="go('hiw')">How We Work</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 SharpSigma. All rights reserved.</div><div class="footer-mark">SHARP BY DESIGN. SIGMA BY STANDARD.</div></div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     INDUSTRIES PAGE
+══════════════════════════════════════ -->
+<div id="page-industries" class="page">
+  <div class="page-hero">
+    <div class="page-hero-line"></div>
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-content">
+      <div class="breadcrumb">SharpSigma <span class="sep">/</span> Industries</div>
+      <h1 class="display-lg">Industries <span class="amber">We Serve</span></h1>
+      <p class="page-hero-subtitle">SharpSigma's capabilities are sector-agnostic — built around the demands of complex, precision-driven manufacturing wherever it exists. If you manufacture, we can help.</p>
+    </div>
+  </div>
+
+  <div class="ind-body">
+
+    <!-- Capability-first intro -->
+    <div class="capability-intro">
+      <div class="cap-text">
+        <div class="eyebrow">Our Approach</div>
+        <h2 class="display-md" style="margin-bottom:20px">Capability First.<br><span class="amber">Industry Second.</span></h2>
+        <p class="body-lg" style="margin-bottom:20px">We don't limit ourselves to a named list of sectors. Our capabilities — precision engineering, quality systems, cost engineering, facility consulting, and full CM lifecycle management — are relevant wherever manufacturers need a credible, technically deep partner.</p>
+        <p class="body-md">What matters is the complexity of what you make and the standards you're held to — not which industry label you carry.</p>
+      </div>
+      <div class="cap-visual">
+        <ul class="cap-list">
+          <li>Complex, tight-tolerance manufactured components</li>
+          <li>High-reliability assemblies and systems</li>
+          <li>Facilities being built or retooled</li>
+          <li>Quality systems under pressure or being built</li>
+          <li>Supply chains being established or optimized</li>
+          <li>Costs that need to be understood and reduced</li>
+          <li>Processes that need to be leaner and faster</li>
+          <li>Products that need to be validated and proven</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sector Cards -->
+    <div class="eyebrow" style="margin-bottom:40px">Sectors We Know Well</div>
+    <div class="sectors-grid">
+      <div class="sector-card reveal">
+        <span class="sector-icon">🚗</span>
+        <div class="sector-title">Automotive</div>
+        <p class="sector-body">The most demanding quality environment in manufacturing — and one we know in depth. We bring automotive-grade quality system expertise at the highest auditing level, precision machining for powertrain and chassis components, and full CM lifecycle support for Tier 1/2 supply chains.</p>
+        <ul class="sector-bullets">
+          <li>Automotive-grade quality systems and internal auditing</li>
+          <li>PPAP, APQP, FMEA, and control plan expertise</li>
+          <li>Precision components for powertrain, chassis, EV platforms</li>
+          <li>Turnkey parts delivery for Tier 1/2 manufacturers</li>
+          <li>CM qualification and supplier development</li>
+          <li>New program launch and ramp-up support</li>
+        </ul>
+      </div>
+      <div class="sector-card reveal">
+        <span class="sector-icon">🔌</span>
+        <div class="sector-title">Electronics & EMS</div>
+        <p class="sector-body">Seven years of electronics manufacturing experience means we understand what high-reliability production actually demands. ESD discipline, traceability systems, soldering quality standards, and precision tolerances — operationally, from having run these environments at scale.</p>
+        <ul class="sector-bullets">
+          <li>Precision enclosures and mechanical assemblies</li>
+          <li>Electronics manufacturing process design</li>
+          <li>Test solution design for electronic assemblies</li>
+          <li>Traceability and quality documentation systems</li>
+          <li>High-mix, high-complexity production management</li>
+          <li>Turnkey parts and CM support for EMS clients</li>
+        </ul>
+      </div>
+      <div class="sector-card reveal">
+        <span class="sector-icon">✈️</span>
+        <div class="sector-title">Aerospace & Defence</div>
+        <p class="sector-body">Licensed engineering oversight, tight-tolerance machining, and formal validation capability make SharpSigma credible for aerospace and defence — where engineering authority, documentation rigor, and full traceability are mandatory, not optional.</p>
+        <ul class="sector-bullets">
+          <li>Professionally licensed engineering oversight and sign-off</li>
+          <li>Tight-tolerance precision machining</li>
+          <li>Full material certification and traceability</li>
+          <li>Formal validation and reliability engineering</li>
+          <li>First-article inspection and documentation</li>
+          <li>Test fixture design for critical assemblies</li>
+        </ul>
+      </div>
+      <div class="sector-card reveal">
+        <span class="sector-icon">🏗️</span>
+        <div class="sector-title">Industrial & Heavy Equipment</div>
+        <p class="sector-body">Custom precision parts, facility consulting, cost engineering, and CM setup for industrial manufacturers managing capital-intensive decisions. Our greenfield and brownfield experience is particularly relevant for clients making major facility investments or reshoring production.</p>
+        <ul class="sector-bullets">
+          <li>Turnkey custom parts and assemblies</li>
+          <li>Greenfield and brownfield facility planning</li>
+          <li>Production line design and capacity analysis</li>
+          <li>Cost engineering and should-cost modelling</li>
+          <li>Contract manufacturing setup and qualification</li>
+          <li>Lean and process optimization programs</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:80px;padding:56px;background:var(--navy2);border:1px solid rgba(255,255,255,.06)">
+      <div class="eyebrow" style="margin-bottom:16px">Don't See Your Sector?</div>
+      <h3 class="display-md" style="font-size:32px;margin-bottom:16px">If You <span class="amber">Manufacture</span>,<br>We Can Help.</h3>
+      <p class="body-md" style="max-width:560px;margin-bottom:32px">Our capabilities are built around the demands of complex manufacturing — not around a fixed sector list. Medical devices, energy, consumer goods, defence sub-tiers, robotics — if precision, quality, and accountability matter to your business, talk to us.</p>
+      <button class="btn-primary" onclick="go('contact')">Start a Conversation →</button>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand"><div class="nav-logo" onclick="go('home')" style="margin-bottom:16px"><span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span></div><div class="footer-tagline">Sharp by Design. Sigma by Standard.</div><p class="footer-desc">Full-lifecycle manufacturing partner.</p><div class="footer-email">info@sharpsigma.com</div></div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a onclick="go('services')">All Services</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="go('about')">About Us</a></li><li><a onclick="go('contact')">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>More</h4><ul><li><a onclick="go('hiw')">How We Work</a></li><li><a onclick="go('contact')">Get a Quote</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 SharpSigma. All rights reserved.</div><div class="footer-mark">SHARP BY DESIGN. SIGMA BY STANDARD.</div></div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ABOUT PAGE
+══════════════════════════════════════ -->
+<div id="page-about" class="page">
+  <div class="page-hero">
+    <div class="page-hero-line"></div>
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-content">
+      <div class="breadcrumb">SharpSigma <span class="sep">/</span> About</div>
+      <h1 class="display-lg">About <span class="amber">SharpSigma</span></h1>
+      <p class="page-hero-subtitle">We're practitioners who became a firm — not a firm that studied manufacturing. That distinction shows up in every conversation, every engagement, and every deliverable.</p>
+    </div>
+  </div>
+
+  <div class="about-body">
+
+    <!-- Story -->
+    <div class="about-story">
+      <div class="about-text">
+        <div class="eyebrow">Who We Are</div>
+        <h2 class="display-md" style="margin-bottom:28px">Built by <span class="amber">Makers</span></h2>
+        <p class="body-lg">SharpSigma is a precision engineering and manufacturing firm built by people who have actually worked the floor, run the audits, and signed the drawings.</p>
+        <p class="body-md" style="margin-top:16px">Our team brings together licensed professional engineering, expert-level quality system auditing, electronics and mechanical design, precision machining, industrial automation, and greenfield and brownfield facility experience. Not as a collection of specialists — as an integrated team that has worked across the full manufacturing lifecycle.</p>
+        <div class="about-quote">"Precision isn't just about tolerances. It's about how you think — how you design, how you audit, how you plan a facility, and how you show up when a client has a real problem that needs solving."</div>
+        <p class="body-md">SharpSigma exists to bring that kind of thinking to manufacturers who need a genuine partner. One that consults, engineers, and delivers — all under one accountable roof.</p>
+      </div>
+      <div>
+        <div class="about-metrics">
+          <div class="metrics-grid">
+            <div class="metric"><span class="metric-n">7+</span><div class="metric-l">Years electronics manufacturing experience</div></div>
+            <div class="metric"><span class="metric-n">7+</span><div class="metric-l">Years mechanical design experience</div></div>
+            <div class="metric"><span class="metric-n">7+</span><div class="metric-l">Years precision machining experience</div></div>
+            <div class="metric"><span class="metric-n">8+</span><div class="metric-l">Service capabilities across 3 pillars</div></div>
+            <div class="metric"><span class="metric-n">3</span><div class="metric-l">Business lines covering full lifecycle</div></div>
+            <div class="metric"><span class="metric-n">2×</span><div class="metric-l">Greenfield & brownfield facility experience</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Philosophy -->
+    <div class="philosophy reveal">
+      <div class="eyebrow" style="margin-bottom:40px">Our Philosophy</div>
+      <div class="philosophy-inner">
+        <div class="phil-item"><div class="phil-num">01</div><div class="phil-title">Practitioners First</div><p class="phil-body">Every person on the SharpSigma team has done the actual work. Not managed people who did it — done it. That's the foundation of every recommendation we make and every deliverable we sign.</p></div>
+        <div class="phil-item"><div class="phil-num">02</div><div class="phil-title">Outcomes Over Process</div><p class="phil-body">We're accountable for results, not activity. Defined deliverables, measurable outcomes, and honest conversations when things need to change. No vague retainers. No ambiguous scope.</p></div>
+        <div class="phil-item"><div class="phil-num">03</div><div class="phil-title">Precision in Everything</div><p class="phil-body">Sharp by Design. Sigma by Standard. Precision in the parts we produce, the systems we build, the analyses we deliver, and the relationships we maintain. It's not a tagline — it's how we operate.</p></div>
+      </div>
+    </div>
+
+    <!-- Team -->
+    <div style="margin-top:80px">
+      <div class="eyebrow">Our Team</div>
+      <h2 class="display-md" style="margin-bottom:16px">The People <span class="amber">Behind</span> the Work</h2>
+      <p class="body-md" style="max-width:560px;margin-bottom:0">A focused team with deep, specific expertise. Everyone here has done the actual work — not managed people who did.</p>
+      <div class="team-grid">
+        <div class="team-card reveal">
+          <div class="team-avi">🎓</div>
+          <div class="team-role">Engineering Lead</div>
+          <div class="team-name">Lead Engineer</div>
+          <span class="team-badge">Licensed Professional Engineer</span>
+          <p class="team-desc">Our licensed engineering authority — bringing regulated professional sign-off, technical oversight, and documented engineering accountability to every project. A credential that's regulated, rigorous, and rare at this scale.</p>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avi">✅</div>
+          <div class="team-role">Quality Lead</div>
+          <div class="team-name">Quality Expert</div>
+          <span class="team-badge">Lead Quality Auditor</span>
+          <p class="team-desc">Quality system expertise at the highest auditing level — with hands-on experience on both sides of the audit table. Builds systems that pass real audits, not just look compliant on paper.</p>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avi">📐</div>
+          <div class="team-role">Senior Designer</div>
+          <div class="team-name">Design Engineer</div>
+          <span class="team-badge">7+ Years Design Experience</span>
+          <p class="team-desc">Seven years of mechanical design across automotive and electronics. From concept through production-ready packages — with every design optimized to be manufactured, not just drafted and handed over.</p>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avi">⚙️</div>
+          <div class="team-role">Machining Lead</div>
+          <div class="team-name">Precision Machinist</div>
+          <span class="team-badge">7+ Years Machining Experience</span>
+          <p class="team-desc">Seven years on the shop floor producing complex, tight-tolerance components across multiple industries. The judgment that comes from real machining — not from specifications alone.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta-band" style="margin-top:80px">
+    <div><div class="display-md" style="margin-bottom:12px">Let's Work<br>Together.</div><p>Easy to talk to. Straight answers. No pitch.</p></div>
+    <button class="btn-white" onclick="go('contact')">Get in Touch →</button>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand"><div class="nav-logo" onclick="go('home')" style="margin-bottom:16px"><span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span></div><div class="footer-tagline">Sharp by Design. Sigma by Standard.</div><p class="footer-desc">Full-lifecycle manufacturing partner.</p><div class="footer-email">info@sharpsigma.com</div></div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a onclick="go('services')">All Services</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="go('about')">About Us</a></li><li><a onclick="go('contact')">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>More</h4><ul><li><a onclick="go('hiw')">How We Work</a></li><li><a onclick="go('industries')">Industries</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 SharpSigma. All rights reserved.</div><div class="footer-mark">SHARP BY DESIGN. SIGMA BY STANDARD.</div></div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     CONTACT PAGE
+══════════════════════════════════════ -->
+<div id="page-contact" class="page">
+  <div class="page-hero">
+    <div class="page-hero-line"></div>
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-content">
+      <div class="breadcrumb">SharpSigma <span class="sep">/</span> Contact</div>
+      <h1 class="display-lg">Get In <span class="amber">Touch</span></h1>
+      <p class="page-hero-subtitle">Tell us your challenge. We respond within one business day with an honest assessment and a clear path forward — no sales pitch.</p>
+    </div>
+  </div>
+
+  <div class="contact-body">
+    <div class="contact-grid">
+      <div>
+        <div class="eyebrow">Contact</div>
+        <h2 class="display-md" style="margin-bottom:8px">Let's <span class="amber">Talk.</span></h2>
+        <div class="contact-info-items">
+          <div class="ci"><div class="ci-icon">✉️</div><div><div class="ci-label">Email</div><div class="ci-val">info@sharpsigma.com</div></div></div>
+          <div class="ci"><div class="ci-icon">🌐</div><div><div class="ci-label">Website</div><div class="ci-val">www.sharpsigma.com</div></div></div>
+          <div class="ci"><div class="ci-icon">⏱️</div><div><div class="ci-label">Response Time</div><div class="ci-val">Within 1 business day</div></div></div>
+          <div class="ci"><div class="ci-icon">🔧</div><div><div class="ci-label">We Serve</div><div class="ci-val">All manufacturing-intensive industries</div></div></div>
+        </div>
+        <div class="contact-promises">
+          <h4>What to Expect</h4>
+          <p class="promise">No-pressure initial conversation</p>
+          <p class="promise">Honest assessment of your project</p>
+          <p class="promise">Engineers who actually do the work</p>
+          <p class="promise">Clear next steps — not a proposal designed to upsell</p>
+          <p class="promise">If we're not the right fit, we'll tell you</p>
+        </div>
+      </div>
+
+      <div class="form-wrap">
+        <div class="form-title">Request a Quote</div>
+        <p class="form-sub">Complete the form and we'll be in touch within one business day.</p>
+        <div class="frow">
+          <div class="fg"><label class="fl">First Name *</label><input type="text" class="fi" placeholder="John"/></div>
+          <div class="fg"><label class="fl">Last Name *</label><input type="text" class="fi" placeholder="Smith"/></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Company</label><input type="text" class="fi" placeholder="Acme Manufacturing Inc."/></div>
+          <div class="fg"><label class="fl">Email *</label><input type="email" class="fi" placeholder="john@company.com"/></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Phone</label><input type="tel" class="fi" placeholder="+1 (555) 000-0000"/></div>
+          <div class="fg">
+            <label class="fl">Service Needed *</label>
+            <select class="fsel">
+              <option value="" disabled selected>Select a service...</option>
+              <optgroup label="Engineering & Manufacturing">
+                <option>Product Design & Engineering</option>
+                <option>Precision Machining</option>
+                <option>Test Solution Design</option>
+                <option>Electronics Manufacturing</option>
+                <option>Industrial Automation</option>
+                <option>Validation & Reliability</option>
+              </optgroup>
+              <optgroup label="Consultancy">
+                <option>Facility Consulting — Greenfield</option>
+                <option>Facility Consulting — Brownfield</option>
+                <option>Quality Systems</option>
+                <option>Lean & Process Optimization</option>
+                <option>Cost Engineering</option>
+                <option>Technical Documentation</option>
+                <option>Make vs. Buy Analysis</option>
+              </optgroup>
+              <optgroup label="Supply Chain & CM">
+                <option>Turnkey Parts Manufacturing</option>
+                <option>Full-Lifecycle CM Support</option>
+              </optgroup>
+              <option>Multiple / Not Sure</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Industry</label>
+          <select class="fsel">
+            <option value="" disabled selected>Select your industry...</option>
+            <option>Automotive</option>
+            <option>Electronics / EMS</option>
+            <option>Aerospace & Defence</option>
+            <option>Industrial / Heavy Equipment</option>
+            <option>Medical Devices</option>
+            <option>Energy</option>
+            <option>Other Manufacturing</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Project Description *</label>
+          <textarea class="fta" placeholder="Tell us what you're trying to accomplish — your requirements, timeline, volume, and any constraints. The more detail, the better we can help."></textarea>
+        </div>
+        <button class="fsub" onclick="handleSubmit(this)">Send Request →</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand"><div class="nav-logo" onclick="go('home')" style="margin-bottom:16px"><span class="s1">SHARP</span><span class="sig">Σ</span><span class="s2">IGMA</span></div><div class="footer-tagline">Sharp by Design. Sigma by Standard.</div><p class="footer-desc">Full-lifecycle manufacturing partner.</p><div class="footer-email">info@sharpsigma.com</div></div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a onclick="go('services')">All Services</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a onclick="go('about')">About Us</a></li><li><a onclick="go('contact')">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>More</h4><ul><li><a onclick="go('hiw')">How We Work</a></li><li><a onclick="go('industries')">Industries</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 SharpSigma. All rights reserved.</div><div class="footer-mark">SHARP BY DESIGN. SIGMA BY STANDARD.</div></div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
+<script>
+// ── Custom cursor
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('button,a,.pillar,.svc-card,.eng-card,.team-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='56px';ring.style.height='56px';cur.style.opacity='0'});
+  el.addEventListener('mouseleave',()=>{ring.style.width='36px';ring.style.height='36px';cur.style.opacity='1'});
+});
+
+// ── Navigation
+function go(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-center a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const nl=document.getElementById('nl-'+name);
+  if(nl)nl.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // trigger reveals
+  setTimeout(()=>{
+    document.querySelectorAll('#page-'+name+' .reveal').forEach((el,i)=>{
+      setTimeout(()=>el.classList.add('visible'),i*80);
+    });
+    document.querySelectorAll('#page-'+name+' .cm-phase').forEach((el,i)=>{
+      setTimeout(()=>el.classList.add('visible'),i*100);
+    });
+  },100);
+}
+
+// ── Nav scroll effect
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>30);
+});
+
+// ── Intersection observer for reveals
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      obs.unobserve(e.target);
+    }
+  });
+},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+
+document.querySelectorAll('.reveal,.cm-phase').forEach(el=>obs.observe(el));
+
+// ── Form submit
+function handleSubmit(btn){
+  btn.textContent='Sending...';
+  btn.disabled=true;
+  btn.style.background='var(--navy3)';
+  btn.style.color='var(--orange)';
+  setTimeout(()=>{
+    btn.textContent='✓ Sent — We\'ll Be in Touch Within 1 Business Day';
+    btn.style.background='#1a7a3c';
+    btn.style.color='white';
+    btn.style.clipPath='none';
+  },1400);
+}
+
+// ── Counter animation
+function animateCount(el,target,dur=1800){
+  let start=0,step=target/60;
+  const suffix=el.dataset.suffix||'';
+  const timer=setInterval(()=>{
+    start+=step;
+    if(start>=target){start=target;clearInterval(timer)}
+    el.textContent=Math.round(start)+suffix;
+  },dur/60);
+}
+
+// Trigger home reveals on load
+setTimeout(()=>{
+  document.querySelectorAll('#page-home .reveal').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('visible'),i*80);
+  });
+},300);
+</script>
+<script src="articles.js">
+
+// ═══════════════════════════════════════
+//  INSIGHTS ENGINE
+// ═══════════════════════════════════════
+
+// View tracking (localStorage)
+function getViews(id){ try{ return parseInt(localStorage.getItem('ss_views_'+id)||'0'); } catch(e){ return 0; } }
+function incViews(id){ try{ const v=getViews(id)+1; localStorage.setItem('ss_views_'+id,v); return v; } catch(e){ return 1; } }
+function getUseful(id){ try{ return localStorage.getItem('ss_useful_'+id)||null; } catch(e){ return null; } }
+function setUseful(id,val){ try{ localStorage.setItem('ss_useful_'+id,val); } catch(e){} }
+
+// Format view count
+function fmtViews(n){ return n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); }
+
+// Render hub
+function renderHub(){
+  const articles = typeof SHARPSIGMA_ARTICLES !== 'undefined' ? SHARPSIGMA_ARTICLES : [];
+  
+  // Featured
+  const featured = articles.find(a => a.featured) || articles[0];
+  const featWrap = document.getElementById('featured-article-wrap');
+  if(featured && featWrap){
+    const views = getViews(featured.id);
+    featWrap.innerHTML = `
+      <div class="feat-article reveal" onclick="openArticle('${featured.id}')">
+        <div class="feat-img">
+          <img src="${featured.heroImage||''}" alt="${featured.title}" loading="lazy"/>
+        </div>
+        <div class="feat-body">
+          <div class="feat-label">${featured.categoryLabel}</div>
+          <div class="feat-title">${featured.title}</div>
+          <p class="feat-excerpt">${featured.excerpt}</p>
+          <div class="feat-meta">
+            <span>📅 ${featured.date}</span>
+            <span>⏱ ${featured.readTime}</span>
+            <span>👁 ${fmtViews(views)} views</span>
+          </div>
+        </div>
+      </div>`;
+    setTimeout(()=>featWrap.querySelector('.reveal')?.classList.add('visible'),100);
+  }
+
+  // Grid — non-featured
+  renderGrid(articles.filter(a => a.id !== (featured?.id)));
+}
+
+function renderGrid(articles){
+  const grid = document.getElementById('articles-grid');
+  if(!grid) return;
+  if(!articles.length){ grid.innerHTML='<div class="no-articles">No articles in this category yet.</div>'; return; }
+  grid.innerHTML = articles.map((a,i) => `
+    <div class="art-card reveal" data-cat="${a.category}" onclick="openArticle('${a.id}')" style="transition-delay:${i*60}ms">
+      <div class="art-thumb"><img src="${a.heroImage||''}" alt="${a.title}" loading="lazy"/></div>
+      <div class="art-card-body">
+        <div class="art-cat">${a.categoryLabel}</div>
+        <div class="art-card-title">${a.title}</div>
+        <p class="art-card-excerpt">${a.excerpt}</p>
+        <div class="art-card-meta">
+          <span>${a.date}</span>
+          <span>⏱ ${a.readTime}</span>
+          <span class="art-views">👁 ${fmtViews(getViews(a.id))}</span>
+        </div>
+      </div>
+    </div>`).join('');
+  setTimeout(()=>{
+    grid.querySelectorAll('.reveal').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),i*60));
+  },100);
+}
+
+function filterArticles(cat, btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const articles = typeof SHARPSIGMA_ARTICLES !== 'undefined' ? SHARPSIGMA_ARTICLES : [];
+  const featured = articles.find(a=>a.featured)||articles[0];
+  const pool = articles.filter(a=>a.id !== (featured?.id));
+  const filtered = cat==='all' ? pool : pool.filter(a=>a.category===cat);
+  renderGrid(filtered);
+}
+
+// Render block
+function renderBlock(b){
+  switch(b.type){
+    case 'paragraph':   return `<p class="art-p">${b.text}</p>`;
+    case 'heading':     return `<h2 class="art-h">${b.text}</h2>`;
+    case 'subheading':  return `<h3 class="art-sh">${b.text}</h3>`;
+    case 'image':       return `<figure class="art-fig"><img src="${b.src}" alt="${b.caption||''}" loading="lazy"/>${b.caption?`<figcaption>${b.caption}</figcaption>`:''}</figure>`;
+    case 'video':       return `<div class="art-video-wrap"><iframe src="${b.url}" frameborder="0" allowfullscreen></iframe></div>${b.caption?`<p class="art-vid-cap">${b.caption}</p>`:''}`;
+    case 'quote':       return `<blockquote class="art-quote">${b.text}</blockquote>`;
+    case 'callout':     return `<div class="art-callout">${b.text}</div>`;
+    case 'divider':     return `<hr class="art-hr"/>`;
+    case 'list':
+      if(b.style==='numbered') return `<ol class="art-list-ol">${b.items.map(i=>`<li>${i}</li>`).join('')}</ol>`;
+      return `<ul class="art-list-ul">${b.items.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+    case 'table':
+      return `<div class="art-table-wrap"><table class="art-table"><thead><tr>${b.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${b.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    default: return '';
+  }
+}
+
+function openArticle(id){
+  const articles = typeof SHARPSIGMA_ARTICLES !== 'undefined' ? SHARPSIGMA_ARTICLES : [];
+  const art = articles.find(a=>a.id===id);
+  if(!art) return;
+
+  const views = incViews(id);
+  const useful = getUseful(id);
+  const related = articles.filter(a=>a.id!==id && a.category===art.category).slice(0,3);
+  const pageUrl = encodeURIComponent(window.location.href.split('#')[0]+'#article='+id);
+  const pageTitle = encodeURIComponent(art.title);
+
+  const contentHTML = (art.content||[]).map(renderBlock).join('');
+
+  const relatedHTML = related.length ? related.map(r=>`
+    <div class="related-card" onclick="openArticle('${r.id}')">
+      <div class="related-thumb"><img src="${r.heroImage||''}" alt="${r.title}" loading="lazy"/></div>
+      <div>
+        <div class="related-cat">${r.categoryLabel}</div>
+        <div class="related-title">${r.title}</div>
+      </div>
+    </div>`).join('') : '<p class="body-sm">More articles coming soon.</p>';
+
+  document.getElementById('article-content').innerHTML = `
+    <div class="art-hero">
+      <img src="${art.heroImage||''}" alt="${art.title}"/>
+      <div class="art-hero-overlay"></div>
+      <div class="art-hero-content">
+        <button class="art-back" onclick="closeArticle()">Back to Insights</button>
+        <div class="art-hero-cat">${art.categoryLabel}</div>
+        <div class="art-hero-title">${art.title}</div>
+        <div class="art-hero-meta">
+          <span>📅 ${art.date}</span>
+          <span>⏱ ${art.readTime}</span>
+          <span>👁 ${fmtViews(views)} views</span>
+        </div>
+      </div>
+    </div>
+    <div class="art-layout">
+      <div class="art-main">
+        ${contentHTML}
+        <div class="cta-band" style="margin-top:64px;margin-left:-0px">
+          <div class="cta-text"><div class="h-md">Have a Question<br>on This Topic?</div><p>Talk to the team behind the article.</p></div>
+          <button class="btn-white" onclick="go('contact')">Get in Touch →</button>
+        </div>
+      </div>
+      <aside class="art-sidebar">
+        <div class="art-sidebar-box">
+          <div class="art-sidebar-title">Share this Article</div>
+          <div class="share-btns">
+            <button class="share-btn" onclick="shareLinkedIn('${pageUrl}','${pageTitle}')">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+              LinkedIn
+            </button>
+            <button class="share-btn" onclick="shareEmail('${pageUrl}','${pageTitle}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+              Email
+            </button>
+            <button class="share-btn" id="copy-link-btn" onclick="copyLink('${pageUrl}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Copy Link
+            </button>
+          </div>
+        </div>
+        <div class="art-sidebar-box">
+          <div class="art-sidebar-title">Was this useful?</div>
+          <div class="useful-row">
+            <button class="useful-btn ${useful==='yes'?'selected-yes':''}" id="useful-yes" onclick="markUseful('${id}','yes')">
+              👍 Yes
+            </button>
+            <button class="useful-btn ${useful==='no'?'selected-no':''}" id="useful-no" onclick="markUseful('${id}','no')">
+              👎 No
+            </button>
+          </div>
+        </div>
+        <div class="art-sidebar-box">
+          <div class="art-sidebar-title">Related Articles</div>
+          ${relatedHTML}
+        </div>
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="go('contact')">Work With Us →</button>
+      </aside>
+    </div>`;
+
+  document.getElementById('insights-hub-view').style.display='none';
+  document.getElementById('insights-article-view').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // update URL hash (no page reload)
+  history.pushState(null,'','#article='+id);
+}
+
+function closeArticle(){
+  document.getElementById('insights-hub-view').style.display='block';
+  document.getElementById('insights-article-view').classList.remove('active');
+  history.pushState(null,'','#insights');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Share functions
+function shareLinkedIn(url, title){
+  window.open('https://www.linkedin.com/sharing/share-offsite/?url='+url,'_blank');
+}
+function shareEmail(url, title){
+  window.location.href = 'mailto:?subject='+title+'&body=Thought you might find this useful: '+url;
+}
+function copyLink(url){
+  const decoded = decodeURIComponent(url);
+  navigator.clipboard.writeText(decoded).then(()=>{
+    const btn = document.getElementById('copy-link-btn');
+    if(btn){ btn.textContent='✓ Copied!'; btn.classList.add('copied'); setTimeout(()=>{btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Copy Link`; btn.classList.remove('copied'); },2000); }
+  }).catch(()=>{ alert('Copy: '+decoded); });
+}
+function markUseful(id, val){
+  setUseful(id, val);
+  document.getElementById('useful-yes').className='useful-btn'+(val==='yes'?' selected-yes':'');
+  document.getElementById('useful-no').className='useful-btn'+(val==='no'?' selected-no':'');
+}
+
+// Override go() to handle insights
+const _go = go;
+go = function(name){
+  if(name==='insights'){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+    document.getElementById('page-insights').classList.add('active');
+    const nl=document.getElementById('nl-insights');
+    if(nl)nl.classList.add('active');
+    // Reset to hub view
+    document.getElementById('insights-hub-view').style.display='block';
+    document.getElementById('insights-article-view').classList.remove('active');
+    renderHub();
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  _go(name);
+};
+
+// Handle direct article links via hash
+window.addEventListener('load', function(){
+  const hash = window.location.hash;
+  if(hash.startsWith('#article=')){
+    const id = hash.replace('#article=','');
+    go('insights');
+    setTimeout(()=>openArticle(id), 100);
+  }
+});
+
+</script>
+</body>
+</html>
