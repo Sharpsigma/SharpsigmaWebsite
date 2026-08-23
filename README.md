@@ -68,45 +68,6 @@ Wait 1–2 minutes for the initial build.
 
 ---
 
-### Step 4 — Connect Your Custom Domain
-
-GitHub Pages needs 4 DNS A records and 1 CNAME record at your domain registrar.
-
-#### At your DNS provider (GoDaddy / Namecheap / Cloudflare / etc.)
-
-Add these **A records** (pointing to GitHub's servers):
-
-| Type | Name | Value          | TTL  |
-|------|------|----------------|------|
-| A    | @    | 185.199.108.153 | Auto |
-| A    | @    | 185.199.109.153 | Auto |
-| A    | @    | 185.199.110.153 | Auto |
-| A    | @    | 185.199.111.153 | Auto |
-
-Add this **CNAME record** (for www redirect):
-
-| Type  | Name | Value                              | TTL  |
-|-------|------|------------------------------------|------|
-| CNAME | www  | YOUR_USERNAME.github.io            | Auto |
-
-> **Replace `YOUR_USERNAME`** with your actual GitHub username.
-
-#### Back in GitHub Pages Settings
-
-1. Go to **Settings → Pages**
-2. Under **Custom domain**, type: `sharpsigma.com`
-3. Click **Save**
-4. Tick **Enforce HTTPS** (wait a few minutes for the certificate to provision)
-
-#### DNS Propagation
-
-DNS changes take **15 minutes to 48 hours** to fully propagate globally.  
-You can check status at [dnschecker.org](https://dnschecker.org) — search for `sharpsigma.com`.
-
-Once live, both `https://sharpsigma.com` and `https://www.sharpsigma.com` will work.
-
----
-
 ## Adding a New Blog Article
 
 Open `articles.js`. Scroll to the bottom. You'll find a template block in the comments.
